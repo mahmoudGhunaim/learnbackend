@@ -1,0 +1,2039 @@
+[
+  {
+    "id": "strongly-typed",
+    "en": "Strongly typed / Static typing",
+    "ar": "صارمة الأنواع / الأنواع الثابتة",
+    "definition": {
+      "ar": "كل متغير له نوع محدد يُعرف وقت الترجمة، والمترجم يرفض الكود الذي يخلط الأنواع قبل أن يعمل البرنامج.",
+      "en": "Every variable has a type known at compile time; the compiler rejects type mismatches before the program runs."
+    },
+    "snippet": "int count = 5;\ncount = \"five\"; // CS0029: compile-time error",
+    "related": [
+      "type-inference",
+      "value-type",
+      "compiler"
+    ],
+    "lesson": "p0-types",
+    "category": "csharp"
+  },
+  {
+    "id": "value-type",
+    "en": "Value type",
+    "ar": "نوع قيمة",
+    "definition": {
+      "ar": "نوع يحمل المتغير فيه القيمة نفسها، والإسناد ينسخ القيمة. أمثلة: int و double و decimal و bool و struct.",
+      "en": "A type whose variable holds the data itself; assignment copies the value (int, double, bool, structs)."
+    },
+    "snippet": "int a = 5;\nint b = a; // copy\nb = 10;    // a is still 5",
+    "related": [
+      "reference-type",
+      "struct",
+      "stack-heap"
+    ],
+    "lesson": "p0-types",
+    "category": "csharp"
+  },
+  {
+    "id": "reference-type",
+    "en": "Reference type",
+    "ar": "نوع مرجعي",
+    "definition": {
+      "ar": "نوع يحمل المتغير فيه عنواناً (مرجعاً) لكائن في الـ Heap. الإسناد ينسخ المرجع فقط، فيشير المتغيران لنفس الكائن. أمثلة: class و string و المصفوفات.",
+      "en": "A type whose variable holds a reference to an object on the heap; assignment copies the reference (classes, arrays, string)."
+    },
+    "snippet": "var p1 = new Person { Name = \"Sara\" };\nvar p2 = p1;      // same object\np2.Name = \"Lina\"; // p1.Name is \"Lina\" too",
+    "related": [
+      "value-type",
+      "class",
+      "stack-heap"
+    ],
+    "lesson": "p0-types",
+    "category": "csharp"
+  },
+  {
+    "id": "stack-heap",
+    "en": "Stack and Heap",
+    "ar": "المكدس والكومة (Stack و Heap)",
+    "definition": {
+      "ar": "منطقتان في الذاكرة: الـ Stack سريع ومؤقت للمتغيرات المحلية واستدعاءات الدوال، والـ Heap للكائنات التي يديرها جامع القمامة.",
+      "en": "Two memory areas: the stack holds locals and call frames; the heap holds objects managed by the garbage collector."
+    },
+    "snippet": null,
+    "related": [
+      "value-type",
+      "reference-type",
+      "garbage-collector"
+    ],
+    "lesson": "p0-types",
+    "category": "csharp"
+  },
+  {
+    "id": "type-inference",
+    "en": "Type inference (var)",
+    "ar": "استنتاج النوع (var)",
+    "definition": {
+      "ar": "الكلمة var تجعل المترجم يستنتج النوع من القيمة. النوع يبقى ثابتاً ولا يتغير، على عكس let في JavaScript.",
+      "en": "`var` lets the compiler infer the type from the initializer; the variable is still statically typed."
+    },
+    "snippet": "var name = \"Sara\";   // string\nvar total = 9.99m;   // decimal\nname = 5;            // error: name is a string",
+    "related": [
+      "strongly-typed"
+    ],
+    "lesson": "p0-types",
+    "category": "csharp"
+  },
+  {
+    "id": "decimal",
+    "en": "decimal",
+    "ar": "النوع decimal",
+    "definition": {
+      "ar": "نوع عشري دقيق بالأساس 10، مخصص للمال والحسابات المالية. لا يعاني من أخطاء التقريب الثنائي التي يعاني منها double.",
+      "en": "A base-10 floating type for money: no binary rounding errors like double (0.1 + 0.2 == 0.3 is true)."
+    },
+    "snippet": "decimal price = 19.99m;   // the m suffix makes a decimal literal\nConsole.WriteLine(0.1m + 0.2m == 0.3m); // True\nConsole.WriteLine(0.1 + 0.2 == 0.3);    // False (double)",
+    "related": [
+      "value-type",
+      "integer-division"
+    ],
+    "lesson": "p0-types",
+    "category": "csharp"
+  },
+  {
+    "id": "integer-division",
+    "en": "Integer division",
+    "ar": "القسمة الصحيحة",
+    "definition": {
+      "ar": "قسمة عددين صحيحين (int / int) تعطي عدداً صحيحاً وتحذف الكسر. 7 / 2 = 3 وليس 3.5.",
+      "en": "Dividing two integers yields an integer and drops the fraction: 7 / 2 == 3."
+    },
+    "snippet": "int a = 7, b = 2;\nConsole.WriteLine(a / b);          // 3\nConsole.WriteLine(a / (double)b);  // 3.5\nConsole.WriteLine(a / 2m);         // 3.5",
+    "related": [
+      "decimal",
+      "casting"
+    ],
+    "lesson": "p0-types",
+    "category": "csharp"
+  },
+  {
+    "id": "casting",
+    "en": "Casting / Type conversion",
+    "ar": "التحويل بين الأنواع",
+    "definition": {
+      "ar": "تحويل قيمة من نوع لآخر: ضمني (Implicit) عندما لا يوجد فقد بيانات، وصريح (Explicit) بين قوسين عندما قد تُفقد بيانات، أو بدوال مثل int.Parse.",
+      "en": "Converting between types: implicit when safe, explicit `(int)x` when data may be lost, or via Parse/TryParse/Convert."
+    },
+    "snippet": "double d = 9.7;\nint i = (int)d;               // 9 (truncates)\nint n = int.Parse(\"42\");\nbool ok = int.TryParse(\"x\", out var r); // false, no exception",
+    "related": [
+      "strongly-typed",
+      "integer-division"
+    ],
+    "lesson": "p0-types",
+    "category": "csharp"
+  },
+  {
+    "id": "string-interpolation",
+    "en": "String interpolation",
+    "ar": "استيفاء النصوص",
+    "definition": {
+      "ar": "إدراج قيم داخل نص بوضع $ قبل النص والقيم بين { }. يقابل template literals في JavaScript.",
+      "en": "Embedding expressions in a string with $\"...{expr}...\"; like JavaScript template literals."
+    },
+    "snippet": "var name = \"Sara\"; var total = 1234.5m;\nConsole.WriteLine($\"Hi {name}, you owe {total:N2}\"); // Hi Sara, you owe 1,234.50",
+    "related": [
+      "string"
+    ],
+    "lesson": "p0-types",
+    "category": "csharp"
+  },
+  {
+    "id": "string",
+    "en": "string",
+    "ar": "النوع string",
+    "definition": {
+      "ar": "نوع مرجعي غير قابل للتعديل (Immutable) لتمثيل النصوص. كل عملية تعديل تنشئ نصاً جديداً، ولهذا يُستخدم StringBuilder عند البناء المتكرر في حلقة.",
+      "en": "An immutable reference type for text; every modification creates a new string (use StringBuilder in loops)."
+    },
+    "snippet": "string s = \"abc\";\nstring upper = s.ToUpper(); // new string; s is still \"abc\"",
+    "related": [
+      "reference-type",
+      "immutability",
+      "string-interpolation"
+    ],
+    "lesson": "p0-types",
+    "category": "csharp"
+  },
+  {
+    "id": "exception",
+    "en": "Exception",
+    "ar": "الاستثناء",
+    "definition": {
+      "ar": "كائن يمثل خطأً أثناء التشغيل يُرمى بـ throw ويُلتقط بـ try/catch. إذا لم يُلتقط يوقف البرنامج (أو الطلب في ASP.NET Core).",
+      "en": "An object representing a runtime error, thrown with `throw` and handled with try/catch."
+    },
+    "snippet": "if (amount <= 0)\n    throw new ArgumentOutOfRangeException(nameof(amount));\n\ntry { Withdraw(100); }\ncatch (InvalidOperationException ex) { Console.WriteLine(ex.Message); }",
+    "related": [
+      "null-reference-exception"
+    ],
+    "lesson": "p0-types",
+    "category": "csharp"
+  },
+  {
+    "id": "compiler",
+    "en": "Compiler",
+    "ar": "المترجم",
+    "definition": {
+      "ar": "برنامج يحوّل الكود المصدري إلى صيغة تنفيذية. في ‎.NET المترجم اسمه Roslyn، ويحوّل C# إلى لغة وسيطة IL.",
+      "en": "A program that translates source code; in .NET, Roslyn compiles C# to IL."
+    },
+    "snippet": null,
+    "related": [
+      "roslyn",
+      "il",
+      "jit"
+    ],
+    "lesson": "p1-runtime",
+    "category": "dotnet"
+  },
+  {
+    "id": "class",
+    "en": "Class",
+    "ar": "الصنف (Class)",
+    "definition": {
+      "ar": "قالب يعرّف البيانات (حقول وخصائص) والسلوك (دوال) لنوع من الكائنات. كل كائن ينشأ منه بـ new.",
+      "en": "A blueprint defining data (fields, properties) and behaviour (methods); objects are created with `new`."
+    },
+    "snippet": "public class Product\n{\n    public string Name { get; set; } = \"\";\n    public decimal Price { get; set; }\n    public decimal WithTax(decimal rate) => Price * (1 + rate);\n}",
+    "related": [
+      "object",
+      "property",
+      "constructor",
+      "reference-type"
+    ],
+    "lesson": "p0-classes",
+    "category": "csharp"
+  },
+  {
+    "id": "object",
+    "en": "Object / Instance",
+    "ar": "الكائن (Object)",
+    "definition": {
+      "ar": "نسخة فعلية من صنف موجودة في الذاكرة، تُنشأ بـ new ولها قيم خاصة بها.",
+      "en": "A concrete instance of a class living in memory, created with `new`."
+    },
+    "snippet": "var pen = new Product { Name = \"Pen\", Price = 1.5m };",
+    "related": [
+      "class"
+    ],
+    "lesson": "p0-classes",
+    "category": "csharp"
+  },
+  {
+    "id": "field",
+    "en": "Field",
+    "ar": "الحقل (Field)",
+    "definition": {
+      "ar": "متغير يعيش داخل الكائن. يُجعل عادةً private ويُكشف عبر خاصية (Property). الاصطلاح: _camelCase.",
+      "en": "A variable stored inside an object; usually private, exposed through properties."
+    },
+    "snippet": "private readonly List<decimal> _transactions = new();",
+    "related": [
+      "property",
+      "encapsulation"
+    ],
+    "lesson": "p0-classes",
+    "category": "csharp"
+  },
+  {
+    "id": "property",
+    "en": "Property",
+    "ar": "الخاصية (Property)",
+    "definition": {
+      "ar": "عضو يبدو كحقل من الخارج لكنه في الداخل دالتا get و set، فتستطيع التحكم في القراءة والكتابة والتحقق.",
+      "en": "A member that looks like a field but is backed by get/set accessors, letting you control access and validation."
+    },
+    "snippet": "public decimal Balance { get; private set; }  // public read, private write\npublic string Owner { get; }                 // read-only after construction\npublic int Age { get; init; }                // settable only during creation",
+    "related": [
+      "field",
+      "encapsulation",
+      "init-accessor"
+    ],
+    "lesson": "p0-classes",
+    "category": "csharp"
+  },
+  {
+    "id": "init-accessor",
+    "en": "init accessor",
+    "ar": "الموصِّل init",
+    "definition": {
+      "ar": "بديل لـ set يسمح بإعطاء الخاصية قيمة فقط أثناء إنشاء الكائن، ثم تصبح للقراءة فقط.",
+      "en": "Like `set`, but only usable during object creation (object initializers, `with`)."
+    },
+    "snippet": "public record User { public string Email { get; init; } = \"\"; }\nvar u = new User { Email = \"a@b.c\" };\n// u.Email = \"x\"; // CS8852",
+    "related": [
+      "property",
+      "immutability",
+      "record"
+    ],
+    "lesson": "p0-records",
+    "category": "csharp"
+  },
+  {
+    "id": "constructor",
+    "en": "Constructor",
+    "ar": "الباني (Constructor)",
+    "definition": {
+      "ar": "دالة خاصة تحمل اسم الصنف وتعمل مرة واحدة عند إنشاء الكائن لتجهيز حالته والتحقق من صحتها.",
+      "en": "A special method run once when an object is created, used to initialize and validate state."
+    },
+    "snippet": "public BankAccount(string owner)\n{\n    if (string.IsNullOrWhiteSpace(owner)) throw new ArgumentException(\"Owner required\");\n    Owner = owner;\n}",
+    "related": [
+      "class",
+      "primary-constructor"
+    ],
+    "lesson": "p0-classes",
+    "category": "csharp"
+  },
+  {
+    "id": "primary-constructor",
+    "en": "Primary constructor",
+    "ar": "الباني الأساسي (Primary constructor)",
+    "definition": {
+      "ar": "صيغة مختصرة (منذ C# 12) تضع معاملات الباني بجانب اسم الصنف مباشرة، وتصبح متاحة في كل الصنف. تشبه Constructor promotion في PHP 8.",
+      "en": "C# 12 syntax that declares constructor parameters on the type itself; they are in scope in the whole class."
+    },
+    "snippet": "public class OrderService(IOrderRepository repo, ILogger<OrderService> logger)\n{\n    public Order? Find(int id) => repo.GetById(id);\n}",
+    "related": [
+      "constructor",
+      "dependency-injection"
+    ],
+    "lesson": "p0-classes",
+    "category": "csharp"
+  },
+  {
+    "id": "access-modifier",
+    "en": "Access modifier",
+    "ar": "مُعدِّل الوصول",
+    "definition": {
+      "ar": "كلمة تحدد من يستطيع استخدام العضو: public للجميع، private داخل الصنف فقط، protected للصنف وأبنائه، internal داخل نفس المشروع (Assembly).",
+      "en": "Keywords controlling visibility: public, private, protected, internal (same assembly)."
+    },
+    "snippet": "public class Account\n{\n    private decimal _balance;        // only inside Account\n    protected void Audit() { }       // Account and subclasses\n    internal void Reset() { }        // same project\n    public decimal Balance => _balance;\n}",
+    "related": [
+      "encapsulation"
+    ],
+    "lesson": "p0-classes",
+    "category": "csharp"
+  },
+  {
+    "id": "encapsulation",
+    "en": "Encapsulation",
+    "ar": "التغليف",
+    "definition": {
+      "ar": "إخفاء تفاصيل الحالة الداخلية للكائن وإتاحة تعديلها فقط عبر دوال تضمن بقاءها صحيحة دائماً.",
+      "en": "Hiding an object's internal state so it can only change through methods that keep it valid."
+    },
+    "snippet": "public decimal Balance { get; private set; }\npublic void Withdraw(decimal amount)\n{\n    if (amount > Balance) throw new InvalidOperationException(\"Insufficient funds\");\n    Balance -= amount;\n}",
+    "related": [
+      "access-modifier",
+      "property"
+    ],
+    "lesson": "p0-classes",
+    "category": "csharp"
+  },
+  {
+    "id": "static-member",
+    "en": "Static member",
+    "ar": "العضو الثابت (static)",
+    "definition": {
+      "ar": "عضو يخص الصنف نفسه وليس كائناً معيّناً، فهناك نسخة واحدة مشتركة. يُستدعى باسم الصنف: Math.Max.",
+      "en": "A member that belongs to the type itself, shared by all instances; accessed via the type name."
+    },
+    "snippet": "public class Counter { public static int Created { get; private set; } public Counter() => Created++; }\nConsole.WriteLine(Counter.Created);",
+    "related": [
+      "class"
+    ],
+    "lesson": "p0-classes",
+    "category": "csharp"
+  },
+  {
+    "id": "method",
+    "en": "Method",
+    "ar": "الدالة / الطريقة (Method)",
+    "definition": {
+      "ar": "دالة معرّفة داخل نوع (صنف أو struct أو record). في C# كل دالة يجب أن تنتمي لنوع ما.",
+      "en": "A function declared inside a type; in C# all functions belong to a type."
+    },
+    "snippet": "public decimal Total(int quantity) => Price * quantity;",
+    "related": [
+      "class",
+      "expression-bodied-member"
+    ],
+    "lesson": "p0-classes",
+    "category": "csharp"
+  },
+  {
+    "id": "expression-bodied-member",
+    "en": "Expression-bodied member",
+    "ar": "العضو بجسم تعبيري (=>)",
+    "definition": {
+      "ar": "كتابة دالة أو خاصية من سطر واحد بالسهم => بدلاً من الأقواس و return.",
+      "en": "A one-line member written with `=>` instead of a block with return."
+    },
+    "snippet": "public string FullName => $\"{First} {Last}\";\npublic int Square(int x) => x * x;",
+    "related": [
+      "method",
+      "lambda"
+    ],
+    "lesson": "p0-classes",
+    "category": "csharp"
+  },
+  {
+    "id": "namespace",
+    "en": "Namespace",
+    "ar": "مساحة الأسماء (Namespace)",
+    "definition": {
+      "ar": "طريقة لتنظيم الأنواع وتجنب تعارض الأسماء، مثل System.Collections.Generic. تُستورد بـ using.",
+      "en": "A way to group types and avoid name clashes; imported with `using`."
+    },
+    "snippet": "namespace LearnBackend.Api.Services;\nusing System.Text.Json;",
+    "related": [
+      "implicit-usings"
+    ],
+    "lesson": "p0-classes",
+    "category": "csharp"
+  },
+  {
+    "id": "interface",
+    "en": "Interface",
+    "ar": "الواجهة (Interface)",
+    "definition": {
+      "ar": "عقد يحدد مجموعة دوال وخصائص بدون تنفيذ، وأي صنف يطبّقه يلتزم بتنفيذها كلها. أساس حقن الاعتماديات في ASP.NET Core.",
+      "en": "A contract listing members without implementation; implementing classes must provide them all. Core to DI in ASP.NET Core."
+    },
+    "snippet": "public interface IEmailSender\n{\n    Task SendAsync(string to, string subject, string body);\n}\npublic class SmtpEmailSender : IEmailSender { /* ... */ }",
+    "related": [
+      "polymorphism",
+      "dependency-injection",
+      "abstract-class"
+    ],
+    "lesson": "p0-interfaces",
+    "category": "csharp"
+  },
+  {
+    "id": "inheritance",
+    "en": "Inheritance",
+    "ar": "الوراثة",
+    "definition": {
+      "ar": "صنف ابن يأخذ أعضاء صنف أب ويضيف عليها أو يعدّلها. C# تسمح بوراثة صنف واحد فقط، لكن بتطبيق عدة واجهات.",
+      "en": "A derived class reuses and extends a base class; C# allows one base class but many interfaces."
+    },
+    "snippet": "public class Square : Rectangle\n{\n    public Square(double side) : base(side, side) { }\n}",
+    "related": [
+      "polymorphism",
+      "virtual-override",
+      "abstract-class"
+    ],
+    "lesson": "p0-interfaces",
+    "category": "csharp"
+  },
+  {
+    "id": "polymorphism",
+    "en": "Polymorphism",
+    "ar": "تعدد الأشكال",
+    "definition": {
+      "ar": "القدرة على التعامل مع كائنات مختلفة عبر نوع مشترك (واجهة أو صنف أب)، وكل كائن ينفّذ الدالة بطريقته.",
+      "en": "Treating different objects through a common type while each runs its own implementation."
+    },
+    "snippet": "IShape[] shapes = { new Circle(1), new Square(2) };\nforeach (var s in shapes) Console.WriteLine(s.Area()); // each shape's own Area()",
+    "related": [
+      "interface",
+      "inheritance",
+      "virtual-override"
+    ],
+    "lesson": "p0-interfaces",
+    "category": "csharp"
+  },
+  {
+    "id": "virtual-override",
+    "en": "virtual / override",
+    "ar": "virtual و override",
+    "definition": {
+      "ar": "virtual تسمح للأبناء باستبدال تنفيذ الدالة، و override تستبدله فعلاً. أما new فتُخفي الدالة فقط ولا تحقق تعدد الأشكال.",
+      "en": "`virtual` allows a derived class to replace a member; `override` replaces it. `new` only hides it (no polymorphism)."
+    },
+    "snippet": "public class Rectangle { public virtual string Name => \"Rectangle\"; }\npublic class Square : Rectangle { public override string Name => \"Square\"; }",
+    "related": [
+      "inheritance",
+      "polymorphism"
+    ],
+    "lesson": "p0-interfaces",
+    "category": "csharp"
+  },
+  {
+    "id": "abstract-class",
+    "en": "Abstract class",
+    "ar": "الصنف المجرد (Abstract)",
+    "definition": {
+      "ar": "صنف لا يمكن إنشاء كائن منه مباشرة، يجمع كوداً مشتركاً ويترك دوالاً abstract يجب على الأبناء تنفيذها.",
+      "en": "A class that can't be instantiated; it shares code and declares abstract members subclasses must implement."
+    },
+    "snippet": "public abstract class Shape\n{\n    public abstract double Area();\n    public override string ToString() => $\"Area: {Area():0.00}\";\n}",
+    "related": [
+      "interface",
+      "inheritance"
+    ],
+    "lesson": "p0-interfaces",
+    "category": "csharp"
+  },
+  {
+    "id": "sealed",
+    "en": "sealed",
+    "ar": "الكلمة sealed",
+    "definition": {
+      "ar": "تمنع الوراثة من الصنف (أو إعادة تعريف override لاحقة). تُستخدم عندما لا يكون الصنف مصمماً ليُوسَّع.",
+      "en": "Prevents inheriting from a class (or further overriding a member)."
+    },
+    "snippet": "public sealed class DatabaseConnection : IDisposable { }",
+    "related": [
+      "inheritance"
+    ],
+    "lesson": "p0-interfaces",
+    "category": "csharp"
+  },
+  {
+    "id": "struct",
+    "en": "struct",
+    "ar": "البنية (struct)",
+    "definition": {
+      "ar": "نوع قيمة (Value type) خفيف، مناسب للقيم الصغيرة مثل النقاط والتواريخ. DateTime و int من نوع struct.",
+      "en": "A lightweight value type for small values (DateTime and int are structs)."
+    },
+    "snippet": "public readonly struct Point(double x, double y) { public double X => x; public double Y => y; }",
+    "related": [
+      "value-type",
+      "record"
+    ],
+    "lesson": "p0-interfaces",
+    "category": "csharp"
+  },
+  {
+    "id": "enum",
+    "en": "enum",
+    "ar": "التعداد (enum)",
+    "definition": {
+      "ar": "نوع يمثل مجموعة ثابتة من القيم المسماة، وفي الداخل هي أرقام صحيحة.",
+      "en": "A type with a fixed set of named constants (backed by integers)."
+    },
+    "snippet": "public enum OrderStatus { Pending, Paid, Shipped, Cancelled }\nvar s = OrderStatus.Paid;",
+    "related": [
+      "switch-expression"
+    ],
+    "lesson": "p0-interfaces",
+    "category": "csharp"
+  },
+  {
+    "id": "generics",
+    "en": "Generics",
+    "ar": "الأنواع العامة (Generics)",
+    "definition": {
+      "ar": "كتابة صنف أو دالة مرة واحدة تعمل مع أي نوع T، مع بقاء التحقق من الأنواع وقت الترجمة. في C# تبقى المعلومة موجودة وقت التشغيل، على عكس TypeScript.",
+      "en": "Writing a type or method once for any type T while keeping compile-time type safety; reified at runtime in .NET (unlike TypeScript)."
+    },
+    "snippet": "public class Box<T> { public T Value { get; set; } = default!; }\nvar b = new Box<int> { Value = 5 };",
+    "related": [
+      "generic-constraint",
+      "list",
+      "dictionary"
+    ],
+    "lesson": "p0-generics",
+    "category": "csharp"
+  },
+  {
+    "id": "generic-constraint",
+    "en": "Generic constraint (where)",
+    "ar": "قيد النوع العام (where)",
+    "definition": {
+      "ar": "شرط على T مثل where T : class أو where T : IEntity، يسمح لك باستخدام أعضاء ذلك النوع داخل الكود العام.",
+      "en": "A `where` clause restricting T (e.g. `where T : class, IEntity`) so you can use its members."
+    },
+    "snippet": "public class Repository<T> where T : class, IEntity\n{\n    public T? Find(int id) => _items.FirstOrDefault(x => x.Id == id);\n}",
+    "related": [
+      "generics",
+      "interface"
+    ],
+    "lesson": "p0-generics",
+    "category": "csharp"
+  },
+  {
+    "id": "list",
+    "en": "List<T>",
+    "ar": "القائمة List<T>",
+    "definition": {
+      "ar": "مجموعة مرتبة قابلة للتوسع من عناصر من نفس النوع، تقابل المصفوفة في JavaScript.",
+      "en": "A resizable ordered collection of T; the closest match to a JavaScript array."
+    },
+    "snippet": "var names = new List<string> { \"Sara\", \"Omar\" };\nnames.Add(\"Lina\");\nConsole.WriteLine(names.Count); // 3",
+    "related": [
+      "generics",
+      "ienumerable",
+      "dictionary"
+    ],
+    "lesson": "p0-generics",
+    "category": "csharp"
+  },
+  {
+    "id": "dictionary",
+    "en": "Dictionary<TKey, TValue>",
+    "ar": "القاموس Dictionary",
+    "definition": {
+      "ar": "مجموعة أزواج مفتاح ← قيمة مع بحث سريع جداً بالمفتاح. تقابل Map في JavaScript أو المصفوفة الترابطية في PHP.",
+      "en": "A key → value collection with fast lookup; like a JS Map or a PHP associative array."
+    },
+    "snippet": "var stock = new Dictionary<string, int> { [\"pen\"] = 10 };\nif (stock.TryGetValue(\"book\", out var n)) Console.WriteLine(n);\nvar safe = stock.GetValueOrDefault(\"book\"); // 0, no exception",
+    "related": [
+      "generics",
+      "list"
+    ],
+    "lesson": "p0-generics",
+    "category": "csharp"
+  },
+  {
+    "id": "boxing",
+    "en": "Boxing",
+    "ar": "التغليف في كائن (Boxing)",
+    "definition": {
+      "ar": "تحويل نوع قيمة إلى object، مما يتطلب نسخه للـ Heap. Generics تتجنبه، وهذا أحد أسباب أنها أسرع من استخدام object.",
+      "en": "Wrapping a value type in an object on the heap; generics avoid it."
+    },
+    "snippet": "object o = 42;     // boxing\nint n = (int)o;    // unboxing",
+    "related": [
+      "generics",
+      "value-type"
+    ],
+    "lesson": "p0-generics",
+    "category": "csharp"
+  },
+  {
+    "id": "ienumerable",
+    "en": "IEnumerable<T>",
+    "ar": "الواجهة IEnumerable<T>",
+    "definition": {
+      "ar": "أبسط واجهة لأي تسلسل يمكن المرور عليه بـ foreach. كل مجموعات ‎.NET تطبّقها، وكل دوال LINQ تعمل عليها.",
+      "en": "The basic interface for anything you can iterate with foreach; all LINQ operators work on it."
+    },
+    "snippet": "IEnumerable<int> evens = numbers.Where(n => n % 2 == 0);\nforeach (var n in evens) Console.WriteLine(n);",
+    "related": [
+      "linq",
+      "deferred-execution",
+      "list",
+      "iqueryable"
+    ],
+    "lesson": "p0-generics",
+    "category": "csharp"
+  },
+  {
+    "id": "linq",
+    "en": "LINQ (Language Integrated Query)",
+    "ar": "لينك: الاستعلام المدمج في اللغة",
+    "definition": {
+      "ar": "مجموعة دوال مثل Where و Select و OrderBy و GroupBy للاستعلام عن البيانات وتحويلها. تعمل على القوائم في الذاكرة، وتُترجم إلى SQL مع EF Core.",
+      "en": "Query operators (Where, Select, OrderBy, GroupBy...) that work on in-memory collections and, with EF Core, translate to SQL."
+    },
+    "snippet": "var cheap = products\n    .Where(p => p.Price < 50)\n    .OrderBy(p => p.Name)\n    .Select(p => p.Name)\n    .ToList();",
+    "related": [
+      "lambda",
+      "deferred-execution",
+      "ienumerable",
+      "extension-method"
+    ],
+    "lesson": "p0-linq",
+    "category": "csharp"
+  },
+  {
+    "id": "lambda",
+    "en": "Lambda expression",
+    "ar": "تعبير لامدا",
+    "definition": {
+      "ar": "دالة مجهولة الاسم مختصرة تُكتب بالسهم =>، مثل Arrow functions في JavaScript.",
+      "en": "An anonymous inline function written with `=>`, like JavaScript arrow functions."
+    },
+    "snippet": "Func<int, int> square = x => x * x;\nvar adults = users.Where(u => u.Age >= 18);",
+    "related": [
+      "func-delegate",
+      "linq"
+    ],
+    "lesson": "p0-linq",
+    "category": "csharp"
+  },
+  {
+    "id": "func-delegate",
+    "en": "Func / Action (delegates)",
+    "ar": "Func و Action (المفوَّضات)",
+    "definition": {
+      "ar": "أنواع جاهزة لتمثيل دالة كمتغير: Func<T, TResult> ترجع قيمة، و Action<T> لا ترجع شيئاً. تتيح تمرير الدوال كمعاملات.",
+      "en": "Built-in delegate types for passing functions around: Func returns a value, Action returns void."
+    },
+    "snippet": "Func<decimal, decimal> addTax = p => p * 1.16m;\nAction<string> log = msg => Console.WriteLine(msg);\nlog(addTax(10m).ToString());",
+    "related": [
+      "lambda",
+      "delegate"
+    ],
+    "lesson": "p0-linq",
+    "category": "csharp"
+  },
+  {
+    "id": "delegate",
+    "en": "Delegate",
+    "ar": "المفوَّض (Delegate)",
+    "definition": {
+      "ar": "نوع يمثل مرجعاً لدالة بتوقيع معيّن. Func و Action مفوَّضات عامة جاهزة.",
+      "en": "A type-safe reference to a method with a given signature; Func and Action are generic delegates."
+    },
+    "snippet": "public delegate bool Filter(int value);\nFilter isEven = n => n % 2 == 0;",
+    "related": [
+      "func-delegate",
+      "lambda"
+    ],
+    "lesson": "p0-linq",
+    "category": "csharp"
+  },
+  {
+    "id": "extension-method",
+    "en": "Extension method",
+    "ar": "دالة الامتداد (Extension method)",
+    "definition": {
+      "ar": "دالة static تُكتب في صنف static وتظهر وكأنها جزء من نوع آخر. كل دوال LINQ هي Extension methods على IEnumerable<T>.",
+      "en": "A static method that appears as an instance method of another type; all LINQ operators are extension methods."
+    },
+    "snippet": "public static class StringExtensions\n{\n    public static bool IsBlank(this string? s) => string.IsNullOrWhiteSpace(s);\n}\n\"  \".IsBlank(); // true",
+    "related": [
+      "linq"
+    ],
+    "lesson": "p0-linq",
+    "category": "csharp"
+  },
+  {
+    "id": "deferred-execution",
+    "en": "Deferred execution",
+    "ar": "التنفيذ المؤجل",
+    "definition": {
+      "ar": "استعلام LINQ لا يعمل عند كتابته، بل عند المرور عليه (foreach أو ToList أو Count). كل مرور جديد يعيد التنفيذ من البداية.",
+      "en": "A LINQ query runs only when enumerated (foreach, ToList, Count...), and re-runs on every enumeration."
+    },
+    "snippet": "var query = numbers.Where(n => n > 2); // nothing runs yet\nnumbers.Add(10);\nvar list = query.ToList();             // runs now, includes 10",
+    "related": [
+      "linq",
+      "ienumerable"
+    ],
+    "lesson": "p0-linq",
+    "category": "csharp"
+  },
+  {
+    "id": "group-by",
+    "en": "GroupBy",
+    "ar": "التجميع GroupBy",
+    "definition": {
+      "ar": "دالة LINQ تجمّع العناصر حسب مفتاح، وكل مجموعة لها Key وعناصرها، مثل GROUP BY في SQL.",
+      "en": "Groups elements by a key; each group has a Key and its items, like SQL GROUP BY."
+    },
+    "snippet": "var totals = orders\n    .GroupBy(o => o.Customer)\n    .Select(g => new { Customer = g.Key, Total = g.Sum(o => o.Amount) });",
+    "related": [
+      "linq"
+    ],
+    "lesson": "p0-linq",
+    "category": "csharp"
+  },
+  {
+    "id": "iqueryable",
+    "en": "IQueryable<T>",
+    "ar": "الواجهة IQueryable<T>",
+    "definition": {
+      "ar": "مثل IEnumerable لكن الاستعلام يُحفظ كشجرة تعبيرات (Expression tree) ليُترجم إلى لغة أخرى مثل SQL. هذا ما يستخدمه EF Core.",
+      "en": "Like IEnumerable, but the query is kept as an expression tree and translated (e.g. to SQL by EF Core)."
+    },
+    "snippet": "IQueryable<Product> q = db.Products.Where(p => p.Price < 50); // becomes SQL WHERE",
+    "related": [
+      "linq",
+      "ienumerable",
+      "deferred-execution"
+    ],
+    "lesson": "p0-linq",
+    "category": "csharp"
+  },
+  {
+    "id": "async-await",
+    "en": "async / await",
+    "ar": "async و await",
+    "definition": {
+      "ar": "كلمتان لكتابة كود غير متزامن (Asynchronous) يبدو كالكود العادي. await تنتظر مهمة دون حجز الـ Thread، فيخدم الخادم طلبات أخرى في هذه الأثناء.",
+      "en": "Keywords for writing asynchronous code that reads like synchronous code; `await` waits without blocking the thread."
+    },
+    "snippet": "public async Task<User?> GetUserAsync(int id)\n{\n    var json = await http.GetStringAsync($\"/users/{id}\");\n    return JsonSerializer.Deserialize<User>(json);\n}",
+    "related": [
+      "task",
+      "task-whenall",
+      "thread-pool"
+    ],
+    "lesson": "p0-async",
+    "category": "csharp"
+  },
+  {
+    "id": "task",
+    "en": "Task / Task<T>",
+    "ar": "المهمة Task",
+    "definition": {
+      "ar": "كائن يمثل عملية قد تنتهي لاحقاً، ويقابل Promise في JavaScript. Task<T> ترجع قيمة من النوع T.",
+      "en": "An object representing an operation that may complete later; the .NET equivalent of a JavaScript Promise."
+    },
+    "snippet": "Task<int> t = CountAsync();\nint n = await t;",
+    "related": [
+      "async-await",
+      "task-whenall"
+    ],
+    "lesson": "p0-async",
+    "category": "csharp"
+  },
+  {
+    "id": "task-whenall",
+    "en": "Task.WhenAll",
+    "ar": "Task.WhenAll",
+    "definition": {
+      "ar": "تنتظر عدة مهام تعمل في نفس الوقت حتى تنتهي كلها، وتقابل Promise.all في JavaScript.",
+      "en": "Awaits several concurrently running tasks; the equivalent of Promise.all."
+    },
+    "snippet": "var t1 = GetWeatherAsync(\"Amman\");\nvar t2 = GetNewsAsync();\nawait Task.WhenAll(t1, t2);  // both ran at the same time",
+    "related": [
+      "task",
+      "async-await"
+    ],
+    "lesson": "p0-async",
+    "category": "csharp"
+  },
+  {
+    "id": "cancellation-token",
+    "en": "CancellationToken",
+    "ar": "رمز الإلغاء (CancellationToken)",
+    "definition": {
+      "ar": "كائن يُمرر للعمليات غير المتزامنة ليخبرها أن تتوقف، مثلاً عندما يغلق المستخدم الصفحة قبل انتهاء الطلب.",
+      "en": "Passed to async operations to signal cancellation, e.g. when the HTTP client disconnects."
+    },
+    "snippet": "app.MapGet(\"/report\", async (AppDbContext db, CancellationToken ct) =>\n    await db.Orders.ToListAsync(ct));",
+    "related": [
+      "async-await",
+      "task"
+    ],
+    "lesson": "p0-async",
+    "category": "csharp"
+  },
+  {
+    "id": "thread-pool",
+    "en": "Thread pool",
+    "ar": "مجمّع الخيوط (Thread pool)",
+    "definition": {
+      "ar": "مجموعة خيوط تنفيذ (Threads) يعيد ‎.NET استخدامها لتنفيذ العمل. ASP.NET Core يخدم كل طلب على خيط منها، و await يعيد الخيط للمجمّع أثناء الانتظار.",
+      "en": "A pool of reusable threads; ASP.NET Core runs requests on them and `await` returns the thread while waiting."
+    },
+    "snippet": null,
+    "related": [
+      "async-await"
+    ],
+    "lesson": "p0-async",
+    "category": "csharp"
+  },
+  {
+    "id": "async-void",
+    "en": "async void",
+    "ar": "async void",
+    "definition": {
+      "ar": "دالة async لا ترجع Task، فلا يمكن انتظارها ولا التقاط أخطائها، وقد يسقط التطبيق بسببها. استخدمها فقط لمعالجات الأحداث (Event handlers).",
+      "en": "An async method returning void: can't be awaited and its exceptions can crash the process. Only for event handlers."
+    },
+    "snippet": "async void Bad() { await Task.Delay(1); throw new Exception(); } // crashes\nasync Task Good() { await Task.Delay(1); }",
+    "related": [
+      "async-await",
+      "task"
+    ],
+    "lesson": "p0-async",
+    "category": "csharp"
+  },
+  {
+    "id": "nullable-reference-types",
+    "en": "Nullable reference types",
+    "ar": "الأنواع المرجعية القابلة لـ null",
+    "definition": {
+      "ar": "ميزة في المترجم: string تعني «لن يكون null أبداً» و string? تعني «قد يكون null»، والمترجم يحذّرك إذا استخدمت قيمة قد تكون null بدون فحص. هي تحذيرات وقت الترجمة فقط.",
+      "en": "A compiler feature: `string` means never null, `string?` means maybe null, and you get warnings for unsafe use. Compile-time only."
+    },
+    "snippet": "string? middleName = null;\nConsole.WriteLine(middleName.Length);   // CS8602 warning\nConsole.WriteLine(middleName?.Length);  // OK: null",
+    "related": [
+      "null-conditional",
+      "null-coalescing",
+      "nullable-value-types",
+      "null-reference-exception"
+    ],
+    "lesson": "p0-nullable",
+    "category": "csharp"
+  },
+  {
+    "id": "nullable-value-types",
+    "en": "Nullable value types (int?)",
+    "ar": "أنواع القيمة القابلة لـ null (int?)",
+    "definition": {
+      "ar": "int لا يمكن أن يكون null، لكن int? يمكن. لها HasValue و Value، وتُستخدم كثيراً لأعمدة قاعدة البيانات الاختيارية.",
+      "en": "`int?` (Nullable<int>) can hold null; has HasValue/Value. Common for optional database columns."
+    },
+    "snippet": "int? age = null;\nConsole.WriteLine(age.HasValue);       // False\nint years = age ?? 0;",
+    "related": [
+      "nullable-reference-types",
+      "null-coalescing"
+    ],
+    "lesson": "p0-nullable",
+    "category": "csharp"
+  },
+  {
+    "id": "null-conditional",
+    "en": "Null-conditional operator (?.)",
+    "ar": "معامل الشرط الفارغ (?.)",
+    "definition": {
+      "ar": "يصل للعضو فقط إذا لم يكن ما قبله null، وإلا يرجع null بدون استثناء. مثل Optional chaining في JavaScript و ?-> في PHP. ومنذ C# 14 يعمل أيضاً في الإسناد: a?.B = c.",
+      "en": "Accesses a member only if the left side isn't null (like JS optional chaining). Since C# 14 it also works on assignment."
+    },
+    "snippet": "var city = user?.Address?.City;     // null if any part is null\ncustomer?.LastSeen = DateTime.UtcNow; // C# 14: assigns only if customer isn't null",
+    "related": [
+      "null-coalescing",
+      "nullable-reference-types"
+    ],
+    "lesson": "p0-nullable",
+    "category": "csharp"
+  },
+  {
+    "id": "null-coalescing",
+    "en": "Null-coalescing operators (?? and ??=)",
+    "ar": "معاملا الدمج الفارغ (?? و ??=)",
+    "definition": {
+      "ar": "?? يعطي قيمة بديلة إذا كانت الأولى null، و ??= يُسند فقط إذا كان المتغير null.",
+      "en": "`??` supplies a fallback when the left side is null; `??=` assigns only when null."
+    },
+    "snippet": "var name = user.DisplayName ?? user.UserName;\n_cache ??= LoadCache();",
+    "related": [
+      "null-conditional"
+    ],
+    "lesson": "p0-nullable",
+    "category": "csharp"
+  },
+  {
+    "id": "null-forgiving",
+    "en": "Null-forgiving operator (!)",
+    "ar": "معامل التسامح مع null (!)",
+    "definition": {
+      "ar": "يقول للمترجم «أنا متأكد أن هذا ليس null» فيُسكت التحذير. لا يغيّر شيئاً وقت التشغيل: إذا كنت مخطئاً سيحدث NullReferenceException.",
+      "en": "Tells the compiler \"trust me, not null\" and silences the warning; no runtime effect."
+    },
+    "snippet": "var root = XDocument.Parse(xml).Root!; // use only when you are sure",
+    "related": [
+      "nullable-reference-types",
+      "null-reference-exception"
+    ],
+    "lesson": "p0-nullable",
+    "category": "csharp"
+  },
+  {
+    "id": "null-reference-exception",
+    "en": "NullReferenceException",
+    "ar": "استثناء المرجع الفارغ",
+    "definition": {
+      "ar": "الاستثناء الذي يحدث عند استخدام عضو في متغير قيمته null. أشهر خطأ في ‎.NET، والأنواع القابلة لـ null صُممت لمنعه.",
+      "en": "Thrown when you access a member through a null reference; nullable reference types exist to prevent it."
+    },
+    "snippet": "string? s = null;\nvar n = s.Length; // NullReferenceException at runtime",
+    "related": [
+      "nullable-reference-types",
+      "exception"
+    ],
+    "lesson": "p0-nullable",
+    "category": "csharp"
+  },
+  {
+    "id": "required-member",
+    "en": "required modifier",
+    "ar": "المُعدِّل required",
+    "definition": {
+      "ar": "يجبر من ينشئ الكائن على إعطاء قيمة للخاصية في Object initializer، وإلا يحدث خطأ ترجمة.",
+      "en": "Forces callers to set the property in the object initializer (compile-time error otherwise)."
+    },
+    "snippet": "public class User { public required string UserName { get; init; } }\nvar u = new User(); // CS9035 error",
+    "related": [
+      "property",
+      "init-accessor"
+    ],
+    "lesson": "p0-nullable",
+    "category": "csharp"
+  },
+  {
+    "id": "record",
+    "en": "Record",
+    "ar": "السجل (Record)",
+    "definition": {
+      "ar": "نوع مخصص للبيانات: المساواة فيه حسب القيم (Value equality)، وغير قابل للتعديل افتراضياً، ويدعم with و ToString جاهزة. مثالي للـ DTOs والقيم مثل Money.",
+      "en": "A data-focused type with value equality, immutability by default, `with` expressions and a readable ToString. Great for DTOs."
+    },
+    "snippet": "public record Money(decimal Amount, string Currency);\nvar a = new Money(10, \"USD\");\nvar b = new Money(10, \"USD\");\nConsole.WriteLine(a == b); // True",
+    "related": [
+      "value-equality",
+      "with-expression",
+      "immutability",
+      "dto"
+    ],
+    "lesson": "p0-records",
+    "category": "csharp"
+  },
+  {
+    "id": "value-equality",
+    "en": "Value equality",
+    "ar": "المساواة بالقيمة",
+    "definition": {
+      "ar": "كائنان متساويان إذا تساوت قيم خصائصهما، وليس فقط إذا كانا نفس الكائن في الذاكرة (Reference equality، وهي الافتراضية في class).",
+      "en": "Two objects are equal when their data is equal, not only when they are the same instance (reference equality)."
+    },
+    "snippet": "new Money(5, \"USD\") == new Money(5, \"USD\")      // true for a record\nnew Product(\"Pen\") == new Product(\"Pen\")        // false for a class",
+    "related": [
+      "record",
+      "reference-type"
+    ],
+    "lesson": "p0-records",
+    "category": "csharp"
+  },
+  {
+    "id": "with-expression",
+    "en": "with expression",
+    "ar": "تعبير with",
+    "definition": {
+      "ar": "ينشئ نسخة جديدة من record مع تغيير بعض الخصائص، والأصل لا يتغير. يشبه {...obj, x: 1} في JavaScript.",
+      "en": "Creates a modified copy of a record, leaving the original unchanged; like `{...obj, x: 1}` in JS."
+    },
+    "snippet": "var price = new Money(10, \"USD\");\nvar discounted = price with { Amount = 8 };",
+    "related": [
+      "record",
+      "immutability"
+    ],
+    "lesson": "p0-records",
+    "category": "csharp"
+  },
+  {
+    "id": "immutability",
+    "en": "Immutability",
+    "ar": "عدم القابلية للتعديل",
+    "definition": {
+      "ar": "الكائن لا يتغير بعد إنشائه، وأي تعديل ينشئ كائناً جديداً. يجعل الكود أسهل في الفهم وآمناً بين الـ Threads.",
+      "en": "Objects never change after creation; changes produce new objects. Easier reasoning and thread-safety."
+    },
+    "snippet": "public record Point(int X, int Y);\nvar p = new Point(1, 2);\n// p.X = 5;            // error\nvar q = p with { X = 5 };",
+    "related": [
+      "record",
+      "with-expression",
+      "string"
+    ],
+    "lesson": "p0-records",
+    "category": "csharp"
+  },
+  {
+    "id": "pattern-matching",
+    "en": "Pattern matching",
+    "ar": "مطابقة الأنماط",
+    "definition": {
+      "ar": "فحص شكل القيمة ونوعها وخصائصها بصيغة مختصرة باستخدام is و switch: أنماط النوع والخصائص والمقارنة (relational) و and/or/not.",
+      "en": "Testing a value's type, shape and properties with `is` and `switch`: type, property, relational and logical patterns."
+    },
+    "snippet": "if (shape is Circle { Radius: > 10 } big) Console.WriteLine(big.Radius);\nvar label = age switch { < 13 => \"child\", < 18 => \"teen\", _ => \"adult\" };",
+    "related": [
+      "switch-expression",
+      "record"
+    ],
+    "lesson": "p0-records",
+    "category": "csharp"
+  },
+  {
+    "id": "switch-expression",
+    "en": "switch expression",
+    "ar": "تعبير switch",
+    "definition": {
+      "ar": "صيغة switch ترجع قيمة مباشرة، وكل حالة نمط => قيمة، و _ هي الحالة الافتراضية.",
+      "en": "A switch that produces a value; each arm is `pattern => value`, `_` is the default."
+    },
+    "snippet": "var shipping = total switch\n{\n    < 50 => 5m,\n    < 100 => 2.5m,\n    _ => 0m,\n};",
+    "related": [
+      "pattern-matching",
+      "enum"
+    ],
+    "lesson": "p0-records",
+    "category": "csharp"
+  },
+  {
+    "id": "operator-overloading",
+    "en": "Operator overloading",
+    "ar": "إعادة تعريف المعاملات",
+    "definition": {
+      "ar": "تعريف معنى معامل مثل + أو == لنوعك الخاص، فتكتب price1 + price2 بدلاً من price1.Add(price2).",
+      "en": "Defining what operators like + or == mean for your own type."
+    },
+    "snippet": "public static Money operator +(Money a, Money b) => a with { Amount = a.Amount + b.Amount };",
+    "related": [
+      "record"
+    ],
+    "lesson": "p0-records",
+    "category": "csharp"
+  },
+  {
+    "id": "dto",
+    "en": "DTO (Data Transfer Object)",
+    "ar": "كائن نقل البيانات (DTO)",
+    "definition": {
+      "ar": "كائن بسيط يحمل البيانات المرسلة أو المستقبلة عبر الـ API فقط، منفصل عن كيانات قاعدة البيانات. غالباً يُكتب كـ record.",
+      "en": "A simple object carrying exactly the data an API sends/receives, separate from database entities; often a record."
+    },
+    "snippet": "public record ProductDto(int Id, string Name, decimal Price);",
+    "related": [
+      "record"
+    ],
+    "lesson": "p0-records",
+    "category": "aspnet"
+  },
+  {
+    "id": "icomparable",
+    "en": "IComparable<T>",
+    "ar": "الواجهة IComparable<T>",
+    "definition": {
+      "ar": "واجهة تعرّف الترتيب الطبيعي لنوع عبر CompareTo (سالب: أصغر، صفر: متساوٍ، موجب: أكبر)، فتعمل Order و Sort و Max عليه.",
+      "en": "Defines a type's natural order via CompareTo (<0, 0, >0) so Order/Sort/Max work on it."
+    },
+    "snippet": "public int CompareTo(Version? other) => Major.CompareTo(other?.Major ?? 0);",
+    "related": [
+      "interface",
+      "linq"
+    ],
+    "lesson": "p1-nuget",
+    "category": "csharp"
+  },
+  {
+    "id": "dependency-injection",
+    "en": "Dependency Injection (DI)",
+    "ar": "حقن الاعتماديات",
+    "definition": {
+      "ar": "بدلاً من أن ينشئ الصنف ما يحتاجه بنفسه (new)، يستقبله من الخارج عبر الـ Constructor غالباً كواجهة. ASP.NET Core يأتي بحاوية DI مدمجة. (تفصيل كامل في المرحلة 3)",
+      "en": "Instead of creating its dependencies with `new`, a class receives them (usually interfaces) through its constructor. ASP.NET Core has a built-in container. (Deep dive in Phase 3.)"
+    },
+    "snippet": "public class Library(IClock clock) { /* uses clock.Today */ }\nbuilder.Services.AddSingleton<IClock, SystemClock>();",
+    "related": [
+      "interface",
+      "primary-constructor"
+    ],
+    "lesson": "p0-interfaces",
+    "category": "aspnet"
+  },
+  {
+    "id": "repository-pattern",
+    "en": "Repository pattern",
+    "ar": "نمط المستودع (Repository)",
+    "definition": {
+      "ar": "طبقة تُخفي تفاصيل تخزين البيانات خلف واجهة بسيطة مثل Add و GetById و GetAll، فلا يعرف باقي الكود إن كانت البيانات في الذاكرة أو في قاعدة بيانات. (تفصيل في المرحلة 4)",
+      "en": "An abstraction hiding data storage behind simple methods (Add, GetById, GetAll). (Covered in depth in Phase 4.)"
+    },
+    "snippet": "public interface IRepository<T> { T? GetById(int id); IReadOnlyList<T> GetAll(); T Add(T item); }",
+    "related": [
+      "generics",
+      "interface"
+    ],
+    "lesson": "p0-generics",
+    "category": "aspnet"
+  },
+  {
+    "id": "dotnet",
+    "en": ".NET (modern .NET)",
+    "ar": "‎.NET الحديث",
+    "definition": {
+      "ar": "المنصة الحالية المفتوحة المصدر والعابرة للأنظمة (Windows و Linux و macOS)، كانت تسمى ‎.NET Core حتى الإصدار 3.1، ثم أصبحت ‎.NET 5 و 6 و 7 و 8 و 9 و 10.",
+      "en": "The current open-source, cross-platform platform (formerly .NET Core until 3.1, then .NET 5, 6 ... 10)."
+    },
+    "snippet": "dotnet --version   # e.g. 10.0.100",
+    "related": [
+      "dotnet-framework",
+      "dotnet-standard",
+      "lts",
+      "tfm"
+    ],
+    "lesson": "p1-dotnet-landscape",
+    "category": "dotnet"
+  },
+  {
+    "id": "dotnet-framework",
+    "en": ".NET Framework",
+    "ar": "‎.NET Framework",
+    "definition": {
+      "ar": "المنصة الأصلية من 2002، تعمل على Windows فقط، وآخر إصدار لها 4.8.1. ما زالت مدعومة كجزء من Windows لكن لا تحصل على ميزات جديدة. لا تبدأ بها مشاريع جديدة.",
+      "en": "The original Windows-only platform (2002); latest 4.8.1. Supported with Windows but frozen: don't start new projects on it."
+    },
+    "snippet": "<TargetFramework>net48</TargetFramework>",
+    "related": [
+      "dotnet",
+      "dotnet-standard"
+    ],
+    "lesson": "p1-dotnet-landscape",
+    "category": "dotnet"
+  },
+  {
+    "id": "dotnet-standard",
+    "en": ".NET Standard",
+    "ar": "‎.NET Standard",
+    "definition": {
+      "ar": "مواصفة لمجموعة واجهات برمجية مشتركة، كانت تتيح كتابة مكتبة واحدة تعمل على ‎.NET Framework و ‎.NET Core معاً. آخر إصدار 2.1 ولن تصدر إصدارات جديدة. ما زال netstandard2.0 مفيداً للمكتبات التي تحتاج دعم ‎.NET Framework.",
+      "en": "A spec of shared APIs letting one library run on .NET Framework and .NET Core. Frozen at 2.1; netstandard2.0 is still useful for libraries that must support .NET Framework."
+    },
+    "snippet": "<TargetFramework>netstandard2.0</TargetFramework>",
+    "related": [
+      "dotnet-framework",
+      "dotnet",
+      "tfm"
+    ],
+    "lesson": "p1-dotnet-landscape",
+    "category": "dotnet"
+  },
+  {
+    "id": "tfm",
+    "en": "TFM (Target Framework Moniker)",
+    "ar": "معرّف إطار الاستهداف (TFM)",
+    "definition": {
+      "ar": "النص القصير الذي يحدد المنصة التي يستهدفها المشروع، مثل net10.0 أو net8.0-windows أو net48 أو netstandard2.0.",
+      "en": "The short string naming the target platform: net10.0, net8.0-windows, net48, netstandard2.0."
+    },
+    "snippet": "<TargetFramework>net10.0</TargetFramework>\n<TargetFrameworks>net8.0;net10.0</TargetFrameworks>",
+    "related": [
+      "target-framework",
+      "csproj"
+    ],
+    "lesson": "p1-dotnet-landscape",
+    "category": "dotnet"
+  },
+  {
+    "id": "target-framework",
+    "en": "Target framework",
+    "ar": "الإطار المستهدف",
+    "definition": {
+      "ar": "إصدار ‎.NET الذي يُبنى المشروع ليعمل عليه، ويحدد أي واجهات برمجية متاحة لك.",
+      "en": "The .NET version a project is built for, which determines the APIs available."
+    },
+    "snippet": null,
+    "related": [
+      "tfm",
+      "csproj"
+    ],
+    "lesson": "p1-dotnet-landscape",
+    "category": "dotnet"
+  },
+  {
+    "id": "lts",
+    "en": "LTS / STS (support policy)",
+    "ar": "دعم طويل الأمد LTS ودعم قياسي STS",
+    "definition": {
+      "ar": "يصدر ‎.NET جديد كل نوفمبر. الإصدارات الزوجية LTS مدعومة 3 سنوات (مثل ‎.NET 10 حتى نوفمبر 2028)، والفردية STS مدعومة 24 شهراً. الشركات تفضّل LTS عادةً.",
+      "en": "A new .NET ships every November. Even versions are LTS (3 years, e.g. .NET 10 until Nov 2028); odd versions are STS (24 months)."
+    },
+    "snippet": null,
+    "related": [
+      "dotnet"
+    ],
+    "lesson": "p1-dotnet-landscape",
+    "category": "dotnet"
+  },
+  {
+    "id": "cross-platform",
+    "en": "Cross-platform",
+    "ar": "عابر للأنظمة",
+    "definition": {
+      "ar": "يعمل نفس الكود على Windows و Linux و macOS. ‎.NET الحديث عابر للأنظمة، ومعظم تطبيقات ASP.NET Core تعمل في الإنتاج على Linux داخل Docker.",
+      "en": "The same code runs on Windows, Linux and macOS; most ASP.NET Core apps run on Linux containers in production."
+    },
+    "snippet": null,
+    "related": [
+      "dotnet"
+    ],
+    "lesson": "p1-dotnet-landscape",
+    "category": "dotnet"
+  },
+  {
+    "id": "sdk",
+    "en": ".NET SDK",
+    "ar": "حزمة تطوير ‎.NET (SDK)",
+    "definition": {
+      "ar": "ما تثبّته للتطوير: يحتوي أداة dotnet، و MSBuild، والمترجم Roslyn، وعميل NuGet، ونسخة من الـ Runtime. أما الخادم الذي يشغّل التطبيق فقط فيحتاج الـ Runtime وحده.",
+      "en": "What developers install: the dotnet CLI, MSBuild, the Roslyn compilers, NuGet and a runtime. Servers that only run apps need just the runtime."
+    },
+    "snippet": "dotnet --list-sdks\ndotnet --list-runtimes",
+    "related": [
+      "runtime",
+      "dotnet-cli",
+      "msbuild",
+      "roslyn"
+    ],
+    "lesson": "p1-runtime",
+    "category": "dotnet"
+  },
+  {
+    "id": "runtime",
+    "en": ".NET Runtime",
+    "ar": "بيئة التشغيل (Runtime)",
+    "definition": {
+      "ar": "ما يلزم لتشغيل تطبيق ‎.NET: الـ CLR ومكتبات BCL. توجد عدة «أُطر مشتركة» مثل Microsoft.NETCore.App و Microsoft.AspNetCore.App.",
+      "en": "What's needed to run a .NET app: the CLR plus the base libraries, shipped as shared frameworks (Microsoft.NETCore.App, Microsoft.AspNetCore.App)."
+    },
+    "snippet": null,
+    "related": [
+      "clr",
+      "bcl",
+      "sdk"
+    ],
+    "lesson": "p1-runtime",
+    "category": "dotnet"
+  },
+  {
+    "id": "clr",
+    "en": "CLR (Common Language Runtime)",
+    "ar": "بيئة التشغيل المشتركة (CLR)",
+    "definition": {
+      "ar": "المحرّك الذي يشغّل كود ‎.NET: يحمّل الـ Assemblies، ويحوّل IL إلى كود الآلة بالـ JIT، ويدير الذاكرة بجامع القمامة، ويتحقق من الأنواع والاستثناءات.",
+      "en": "The engine that runs .NET code: loads assemblies, JIT-compiles IL, manages memory with the GC, handles exceptions and type safety."
+    },
+    "snippet": null,
+    "related": [
+      "jit",
+      "il",
+      "garbage-collector",
+      "assembly"
+    ],
+    "lesson": "p1-runtime",
+    "category": "dotnet"
+  },
+  {
+    "id": "il",
+    "en": "IL (Intermediate Language)",
+    "ar": "اللغة الوسيطة (IL)",
+    "definition": {
+      "ar": "التعليمات التي يحوّل إليها المترجم كود C# داخل ملف ‎.dll. ليست كود آلة بعد، بل لغة مستقلة عن المعالج يترجمها الـ JIT لاحقاً.",
+      "en": "The CPU-independent instructions Roslyn emits into a .dll; the JIT turns them into machine code later."
+    },
+    "snippet": "// C#:  return a + b;\nldarg.0\nldarg.1\nadd\nret",
+    "related": [
+      "jit",
+      "clr",
+      "roslyn",
+      "assembly"
+    ],
+    "lesson": "p1-runtime",
+    "category": "dotnet"
+  },
+  {
+    "id": "jit",
+    "en": "JIT (Just-In-Time compiler)",
+    "ar": "المترجم الفوري (JIT)",
+    "definition": {
+      "ar": "جزء من الـ CLR يترجم IL إلى كود آلة للمعالج الحالي أول مرة تُستدعى فيها الدالة. ‎.NET يستخدم Tiered compilation: ترجمة سريعة أولاً ثم ترجمة محسّنة للدوال الأكثر استخداماً.",
+      "en": "Compiles IL to native code the first time a method runs; tiered compilation starts fast and re-optimizes hot methods."
+    },
+    "snippet": null,
+    "related": [
+      "il",
+      "clr",
+      "native-aot"
+    ],
+    "lesson": "p1-runtime",
+    "category": "dotnet"
+  },
+  {
+    "id": "native-aot",
+    "en": "Native AOT",
+    "ar": "الترجمة المسبقة الأصلية (Native AOT)",
+    "definition": {
+      "ar": "ترجمة التطبيق كاملاً إلى كود آلة وقت النشر (Publish)، فيبدأ فوراً ولا يحتاج Runtime على الجهاز، مع بعض القيود مثل Reflection الديناميكي.",
+      "en": "Compiling the whole app to native code at publish time: instant startup, no runtime needed, with limits (e.g. dynamic reflection)."
+    },
+    "snippet": "dotnet publish -c Release -r linux-x64 -p:PublishAot=true",
+    "related": [
+      "jit",
+      "dotnet-publish"
+    ],
+    "lesson": "p1-runtime",
+    "category": "dotnet"
+  },
+  {
+    "id": "garbage-collector",
+    "en": "Garbage Collector (GC)",
+    "ar": "جامع القمامة (GC)",
+    "definition": {
+      "ar": "جزء من الـ CLR يحرر تلقائياً ذاكرة الكائنات التي لم يعد أحد يشير إليها. يقسم الكائنات لأجيال (0 و 1 و 2) لأن معظم الكائنات تموت صغيرة. لا يحرر الموارد الأخرى كالملفات والاتصالات.",
+      "en": "Automatically frees memory of unreachable objects using generations (0, 1, 2). It does NOT release files or connections: that's IDisposable's job."
+    },
+    "snippet": null,
+    "related": [
+      "idisposable",
+      "stack-heap",
+      "clr"
+    ],
+    "lesson": "p1-runtime",
+    "category": "dotnet"
+  },
+  {
+    "id": "idisposable",
+    "en": "IDisposable",
+    "ar": "الواجهة IDisposable",
+    "definition": {
+      "ar": "واجهة بدالة واحدة Dispose() لتحرير الموارد غير الذاكرة (اتصالات قاعدة البيانات والملفات) فوراً بدلاً من انتظار جامع القمامة.",
+      "en": "An interface with one method, Dispose(), for releasing non-memory resources immediately."
+    },
+    "snippet": "public sealed class Connection : IDisposable\n{\n    public void Dispose() { /* close socket */ }\n}",
+    "related": [
+      "using-statement",
+      "garbage-collector"
+    ],
+    "lesson": "p1-runtime",
+    "category": "csharp"
+  },
+  {
+    "id": "using-statement",
+    "en": "using statement / declaration",
+    "ar": "جملة using",
+    "definition": {
+      "ar": "تضمن استدعاء Dispose() عند الخروج من النطاق، حتى لو حدث استثناء. الصيغة الحديثة using var تغلق عند نهاية الدالة.",
+      "en": "Guarantees Dispose() is called when leaving the scope, even after an exception."
+    },
+    "snippet": "using var connection = new SqliteConnection(cs);\nconnection.Open();\n// disposed automatically at the end of the method",
+    "related": [
+      "idisposable"
+    ],
+    "lesson": "p1-runtime",
+    "category": "csharp"
+  },
+  {
+    "id": "bcl",
+    "en": "BCL (Base Class Library)",
+    "ar": "مكتبة الأصناف الأساسية (BCL)",
+    "definition": {
+      "ar": "المكتبة القياسية المدمجة في ‎.NET: المجموعات و LINQ و System.Text.Json و HttpClient والملفات والتواريخ وغيرها، فلا تحتاج حزمة لكل شيء كما في npm.",
+      "en": "The built-in standard library: collections, LINQ, JSON, HttpClient, IO, dates... much more batteries-included than npm."
+    },
+    "snippet": null,
+    "related": [
+      "runtime"
+    ],
+    "lesson": "p1-runtime",
+    "category": "dotnet"
+  },
+  {
+    "id": "assembly",
+    "en": "Assembly (.dll)",
+    "ar": "التجميعة (Assembly)",
+    "definition": {
+      "ar": "ملف ‎.dll أو ‎.exe ناتج عن البناء، يحتوي IL والبيانات الوصفية (Metadata) عن الأنواع. وحدة النشر وحدود internal في ‎.NET.",
+      "en": "A compiled .dll/.exe containing IL plus type metadata; the unit of deployment and of `internal` visibility."
+    },
+    "snippet": null,
+    "related": [
+      "il",
+      "clr"
+    ],
+    "lesson": "p1-runtime",
+    "category": "dotnet"
+  },
+  {
+    "id": "roslyn",
+    "en": "Roslyn (.NET Compiler Platform)",
+    "ar": "روزلين: منصة المترجم",
+    "definition": {
+      "ar": "مترجم C# و Visual Basic المفتوح المصدر، ويتيح أيضاً تحليل الكود برمجياً. هذا التطبيق يستخدمه لترجمة الكود الذي تكتبه في التمارين!",
+      "en": "The open-source C#/VB compiler with APIs for analyzing code; this very app uses it to compile your exercise code."
+    },
+    "snippet": "var tree = CSharpSyntaxTree.ParseText(code);\nvar compilation = CSharpCompilation.Create(\"x\", [tree], refs);",
+    "related": [
+      "compiler",
+      "il"
+    ],
+    "lesson": "p1-runtime",
+    "category": "dotnet"
+  },
+  {
+    "id": "nuget",
+    "en": "NuGet",
+    "ar": "نيوجت: مدير الحزم",
+    "definition": {
+      "ar": "مدير الحزم الرسمي في ‎.NET، والمستودع العام nuget.org. يقابل npm في JavaScript و Composer في PHP.",
+      "en": "The .NET package manager and the nuget.org registry; like npm or Composer."
+    },
+    "snippet": "dotnet add package Microsoft.EntityFrameworkCore.Sqlite",
+    "related": [
+      "package-reference",
+      "semver",
+      "transitive-dependency"
+    ],
+    "lesson": "p1-nuget",
+    "category": "dotnet"
+  },
+  {
+    "id": "package-reference",
+    "en": "PackageReference",
+    "ar": "مرجع الحزمة (PackageReference)",
+    "definition": {
+      "ar": "عنصر في ملف ‎.csproj يحدد حزمة NuGet وإصدارها، ويقابل سطراً في dependencies داخل package.json.",
+      "en": "The .csproj element declaring a NuGet dependency, like an entry in package.json dependencies."
+    },
+    "snippet": "<PackageReference Include=\"Microsoft.EntityFrameworkCore.Sqlite\" Version=\"10.0.0\" />",
+    "related": [
+      "nuget",
+      "csproj"
+    ],
+    "lesson": "p1-nuget",
+    "category": "dotnet"
+  },
+  {
+    "id": "semver",
+    "en": "Semantic Versioning (SemVer)",
+    "ar": "الترقيم الدلالي للإصدارات (SemVer)",
+    "definition": {
+      "ar": "نظام ترقيم Major.Minor.Patch: الرقم الأكبر عند تغييرات تكسر التوافق، والأوسط لميزات جديدة متوافقة، والأصغر لإصلاحات. ونسخ ما قبل الإصدار مثل 1.0.0-beta.",
+      "en": "Major.Minor.Patch: breaking changes, compatible features, fixes; prereleases like 1.0.0-beta."
+    },
+    "snippet": "10.0.1         // patch fix\n10.1.0         // new feature\n11.0.0-rc.1    // prerelease of a breaking release",
+    "related": [
+      "nuget",
+      "version-range"
+    ],
+    "lesson": "p1-nuget",
+    "category": "dotnet"
+  },
+  {
+    "id": "version-range",
+    "en": "Version range (NuGet)",
+    "ar": "نطاق الإصدار في NuGet",
+    "definition": {
+      "ar": "صيغة تحديد الإصدارات المقبولة: \"1.0\" تعني 1.0 فأحدث، و [1.0,2.0) من 1.0 حتى قبل 2.0. ويختار NuGet أقل إصدار مطابق، على عكس npm الذي يختار الأحدث.",
+      "en": "Syntax for acceptable versions: \"1.0\" means ≥ 1.0, [1.0,2.0) means 1.0 up to (excluding) 2.0. NuGet picks the LOWEST match (npm picks the highest)."
+    },
+    "snippet": "<PackageReference Include=\"Newtonsoft.Json\" Version=\"[13.0,14.0)\" />",
+    "related": [
+      "semver",
+      "nuget"
+    ],
+    "lesson": "p1-nuget",
+    "category": "dotnet"
+  },
+  {
+    "id": "transitive-dependency",
+    "en": "Transitive dependency",
+    "ar": "الاعتمادية المتعدية",
+    "definition": {
+      "ar": "حزمة لم تضفها بنفسك لكنها جاءت لأن حزمة أضفتها تعتمد عليها. dotnet list package --include-transitive تعرضها.",
+      "en": "A package you didn't add yourself but that came in through another package."
+    },
+    "snippet": "dotnet list package --include-transitive",
+    "related": [
+      "nuget",
+      "package-reference"
+    ],
+    "lesson": "p1-nuget",
+    "category": "dotnet"
+  },
+  {
+    "id": "central-package-management",
+    "en": "Central Package Management",
+    "ar": "الإدارة المركزية للحزم",
+    "definition": {
+      "ar": "ملف Directory.Packages.props في جذر الحل يحدد إصدارات كل الحزم في مكان واحد، فتبقى كل المشاريع على نفس الإصدارات.",
+      "en": "A Directory.Packages.props file pins package versions for every project in the repo."
+    },
+    "snippet": "<PackageVersion Include=\"xunit\" Version=\"2.9.3\" />",
+    "related": [
+      "package-reference",
+      "nuget"
+    ],
+    "lesson": "p1-nuget",
+    "category": "dotnet"
+  },
+  {
+    "id": "nuget-audit",
+    "en": "NuGet Audit",
+    "ar": "تدقيق الحزم (NuGet Audit)",
+    "definition": {
+      "ar": "فحص تلقائي أثناء restore يحذّرك (NU1901 إلى NU1904) إذا كانت حزمة تستخدمها فيها ثغرة أمنية معروفة.",
+      "en": "Automatic restore-time check that warns (NU1901–NU1904) about packages with known vulnerabilities."
+    },
+    "snippet": "dotnet list package --vulnerable --include-transitive",
+    "related": [
+      "nuget"
+    ],
+    "lesson": "p1-nuget",
+    "category": "dotnet"
+  },
+  {
+    "id": "dotnet-cli",
+    "en": "dotnet CLI",
+    "ar": "أداة سطر الأوامر dotnet",
+    "definition": {
+      "ar": "الأداة الواحدة لكل شيء: إنشاء المشاريع، والبناء، والتشغيل، والاختبار، والنشر، وإدارة الحزم والأدوات.",
+      "en": "The single tool for creating, building, running, testing, publishing projects and managing packages and tools."
+    },
+    "snippet": "dotnet new webapi -n Shop\ndotnet build\ndotnet run\ndotnet test",
+    "related": [
+      "sdk",
+      "dotnet-watch",
+      "dotnet-publish"
+    ],
+    "lesson": "p1-cli",
+    "category": "dotnet"
+  },
+  {
+    "id": "dotnet-watch",
+    "en": "dotnet watch / Hot Reload",
+    "ar": "dotnet watch وإعادة التحميل الفوري",
+    "definition": {
+      "ar": "يشغّل التطبيق ويراقب الملفات، ويطبّق تعديلاتك فوراً (Hot Reload) أو يعيد التشغيل عند الحاجة، مثل nodemon أو vite dev.",
+      "en": "Runs the app, watches files and applies edits live (Hot Reload) or restarts; like nodemon."
+    },
+    "snippet": "dotnet watch --project Backend/LearnBackend.Api",
+    "related": [
+      "dotnet-cli"
+    ],
+    "lesson": "p1-cli",
+    "category": "dotnet"
+  },
+  {
+    "id": "dotnet-publish",
+    "en": "dotnet publish",
+    "ar": "الأمر dotnet publish",
+    "definition": {
+      "ar": "يجهّز التطبيق للنشر في مجلد: بإعدادات Release، ويمكن أن يكون مستقلاً (Self-contained) أو لنظام معين أو Native AOT.",
+      "en": "Produces a deployable folder (Release config), optionally self-contained, for a runtime identifier, or Native AOT."
+    },
+    "snippet": "dotnet publish -c Release -r linux-x64 --self-contained",
+    "related": [
+      "dotnet-cli",
+      "native-aot"
+    ],
+    "lesson": "p1-cli",
+    "category": "dotnet"
+  },
+  {
+    "id": "command-line-arguments",
+    "en": "Command-line arguments",
+    "ar": "معاملات سطر الأوامر",
+    "definition": {
+      "ar": "النصوص التي تُمرر للبرنامج عند تشغيله، وتصل كمصفوفة string[] args. في ASP.NET Core تصبح أيضاً مصدر إعدادات.",
+      "en": "Strings passed when starting a program, received as string[] args; also a configuration source in ASP.NET Core."
+    },
+    "snippet": "dotnet run -- --Sandbox:TimeoutSeconds=10",
+    "related": [
+      "configuration",
+      "dotnet-cli"
+    ],
+    "lesson": "p1-cli",
+    "category": "dotnet"
+  },
+  {
+    "id": "dotnet-tool",
+    "en": ".NET tool",
+    "ar": "أداة ‎.NET",
+    "definition": {
+      "ar": "برنامج سطر أوامر يوزَّع كحزمة NuGet، مثل dotnet-ef. يُثبّت عاماً أو محلياً في المشروع عبر ملف dotnet-tools.json.",
+      "en": "A CLI program shipped as a NuGet package (e.g. dotnet-ef), installed globally or locally via dotnet-tools.json."
+    },
+    "snippet": "dotnet new tool-manifest\ndotnet tool install dotnet-ef\ndotnet ef migrations add Init",
+    "related": [
+      "dotnet-cli",
+      "nuget"
+    ],
+    "lesson": "p1-cli",
+    "category": "dotnet"
+  },
+  {
+    "id": "file-based-app",
+    "en": "File-based apps (dotnet run app.cs)",
+    "ar": "التطبيقات من ملف واحد",
+    "definition": {
+      "ar": "منذ ‎.NET 10 يمكنك تشغيل ملف ‎.cs واحد مباشرة بدون ملف مشروع: dotnet run app.cs. مفيد للسكربتات والتجارب السريعة.",
+      "en": "Since .NET 10 you can run a single .cs file without a project: `dotnet run app.cs`."
+    },
+    "snippet": "#:package Humanizer@2.14.1\nusing Humanizer;\nConsole.WriteLine(\"hello_world\".Humanize());",
+    "related": [
+      "dotnet-cli",
+      "top-level-statements"
+    ],
+    "lesson": "p1-cli",
+    "category": "dotnet"
+  },
+  {
+    "id": "csproj",
+    "en": ".csproj (project file)",
+    "ar": "ملف المشروع ‎.csproj",
+    "definition": {
+      "ar": "ملف XML يصف المشروع: الإطار المستهدف، والحزم، والمراجع، والإعدادات. يقرأه MSBuild. يقابل package.json تقريباً.",
+      "en": "The XML project file (target framework, packages, references, settings) read by MSBuild; roughly package.json."
+    },
+    "snippet": "<Project Sdk=\"Microsoft.NET.Sdk.Web\">\n  <PropertyGroup>\n    <TargetFramework>net10.0</TargetFramework>\n  </PropertyGroup>\n</Project>",
+    "related": [
+      "msbuild",
+      "sdk-style-project",
+      "package-reference"
+    ],
+    "lesson": "p1-project-structure",
+    "category": "dotnet"
+  },
+  {
+    "id": "msbuild",
+    "en": "MSBuild",
+    "ar": "نظام البناء MSBuild",
+    "definition": {
+      "ar": "محرّك البناء في ‎.NET الذي يقرأ ملفات ‎.csproj وينفّذ الخطوات: restore ثم compile ثم copy. dotnet build يستدعيه.",
+      "en": "The .NET build engine that reads .csproj files and runs restore/compile/copy; `dotnet build` invokes it."
+    },
+    "snippet": null,
+    "related": [
+      "csproj",
+      "sdk"
+    ],
+    "lesson": "p1-project-structure",
+    "category": "dotnet"
+  },
+  {
+    "id": "sdk-style-project",
+    "en": "SDK-style project",
+    "ar": "مشروع بنمط SDK",
+    "definition": {
+      "ar": "صيغة ‎.csproj الحديثة القصيرة: سطر Sdk واحد يجلب افتراضات معقولة، وكل ملفات ‎.cs في المجلد تُضمَّن تلقائياً.",
+      "en": "The modern short .csproj format: one Sdk attribute brings sensible defaults and includes all .cs files automatically."
+    },
+    "snippet": "<Project Sdk=\"Microsoft.NET.Sdk\">",
+    "related": [
+      "csproj"
+    ],
+    "lesson": "p1-project-structure",
+    "category": "dotnet"
+  },
+  {
+    "id": "project-reference",
+    "en": "ProjectReference",
+    "ar": "مرجع المشروع (ProjectReference)",
+    "definition": {
+      "ar": "عنصر في ‎.csproj يجعل مشروعاً يستخدم كود مشروع آخر في نفس الحل.",
+      "en": "A .csproj element that makes one project use another project's code."
+    },
+    "snippet": "<ProjectReference Include=\"..\\Shop.Core\\Shop.Core.csproj\" />",
+    "related": [
+      "csproj",
+      "solution-file"
+    ],
+    "lesson": "p1-project-structure",
+    "category": "dotnet"
+  },
+  {
+    "id": "solution-file",
+    "en": "Solution file (.sln / .slnx)",
+    "ar": "ملف الحل (‎.sln و ‎.slnx)",
+    "definition": {
+      "ar": "ملف يجمع عدة مشاريع معاً لتفتحها وتبنيها كوحدة. ‎.NET 10 يستخدم صيغة ‎.slnx الجديدة المبنية على XML افتراضياً.",
+      "en": "Groups several projects to open/build together; .NET 10 defaults to the new XML-based .slnx format."
+    },
+    "snippet": "dotnet new sln -n Shop\ndotnet sln add src/Shop.Api",
+    "related": [
+      "csproj",
+      "project-reference"
+    ],
+    "lesson": "p1-project-structure",
+    "category": "dotnet"
+  },
+  {
+    "id": "bin-obj",
+    "en": "bin/ and obj/ folders",
+    "ar": "مجلدا bin و obj",
+    "definition": {
+      "ar": "مخرجات البناء: obj للملفات الوسيطة و bin للنتيجة النهائية (‎.dll). لا تضعهما في Git أبداً، مثل node_modules.",
+      "en": "Build outputs (obj = intermediate, bin = final .dll); never commit them, like node_modules."
+    },
+    "snippet": null,
+    "related": [
+      "msbuild",
+      "assembly"
+    ],
+    "lesson": "p1-project-structure",
+    "category": "dotnet"
+  },
+  {
+    "id": "implicit-usings",
+    "en": "Implicit usings",
+    "ar": "أوامر using الضمنية",
+    "definition": {
+      "ar": "ميزة تضيف تلقائياً أوامر using شائعة (System و System.Linq و System.Collections.Generic...) لكل ملفات المشروع عبر global using.",
+      "en": "Automatically adds common `global using` directives (System, System.Linq, ...) to every file."
+    },
+    "snippet": "<ImplicitUsings>enable</ImplicitUsings>\n// generated: global using System.Linq;",
+    "related": [
+      "namespace",
+      "csproj"
+    ],
+    "lesson": "p1-project-structure",
+    "category": "dotnet"
+  },
+  {
+    "id": "launch-settings",
+    "en": "launchSettings.json",
+    "ar": "ملف launchSettings.json",
+    "definition": {
+      "ar": "ملف في Properties يحدد كيف يُشغَّل التطبيق محلياً فقط (المنفذ، والبيئة، وفتح المتصفح). يستخدمه dotnet run و Visual Studio، ولا يُستخدم في الإنتاج.",
+      "en": "Local-only launch profiles (URLs, environment) used by dotnet run and IDEs; not used in production."
+    },
+    "snippet": "\"applicationUrl\": \"http://localhost:5064\",\n\"environmentVariables\": { \"ASPNETCORE_ENVIRONMENT\": \"Development\" }",
+    "related": [
+      "environment",
+      "dotnet-cli"
+    ],
+    "lesson": "p1-project-structure",
+    "category": "aspnet"
+  },
+  {
+    "id": "global-json",
+    "en": "global.json",
+    "ar": "ملف global.json",
+    "definition": {
+      "ar": "ملف يثبّت إصدار الـ SDK الذي يستخدمه المستودع، حتى لا يبني كل مطور بإصدار مختلف.",
+      "en": "Pins the SDK version used in a repository."
+    },
+    "snippet": "{ \"sdk\": { \"version\": \"10.0.100\", \"rollForward\": \"latestFeature\" } }",
+    "related": [
+      "sdk"
+    ],
+    "lesson": "p1-project-structure",
+    "category": "dotnet"
+  },
+  {
+    "id": "program-cs",
+    "en": "Program.cs",
+    "ar": "ملف Program.cs",
+    "definition": {
+      "ar": "نقطة بداية تطبيق ASP.NET Core: يسجّل الخدمات في builder.Services، ثم يبني التطبيق، ويرتّب الـ Middleware، ويعرّف الـ Endpoints، ثم Run().",
+      "en": "The entry point: register services on builder.Services, Build(), configure middleware, map endpoints, Run()."
+    },
+    "snippet": "var builder = WebApplication.CreateBuilder(args);\nbuilder.Services.AddControllers();\nvar app = builder.Build();\napp.MapControllers();\napp.Run();",
+    "related": [
+      "top-level-statements",
+      "web-application-builder",
+      "middleware"
+    ],
+    "lesson": "p1-program-config",
+    "category": "aspnet"
+  },
+  {
+    "id": "top-level-statements",
+    "en": "Top-level statements",
+    "ar": "الجمل ذات المستوى الأعلى",
+    "definition": {
+      "ar": "كتابة الكود التنفيذي مباشرة في الملف بدون class Program و static void Main. المترجم يولّدها لك. ملف واحد فقط في المشروع يمكنه ذلك.",
+      "en": "Writing executable code directly in a file without class Program/Main; the compiler generates them. Only one file per project."
+    },
+    "snippet": "Console.WriteLine(\"Hello\"); // the whole program",
+    "related": [
+      "program-cs",
+      "main-method"
+    ],
+    "lesson": "p1-program-config",
+    "category": "csharp"
+  },
+  {
+    "id": "main-method",
+    "en": "Main method",
+    "ar": "الدالة Main",
+    "definition": {
+      "ar": "نقطة دخول أي برنامج ‎.NET: static void Main(string[] args). مع Top-level statements يولّدها المترجم.",
+      "en": "The entry point of every .NET program; generated for you with top-level statements."
+    },
+    "snippet": "static void Main(string[] args) => Console.WriteLine(args.Length);",
+    "related": [
+      "top-level-statements"
+    ],
+    "lesson": "p1-program-config",
+    "category": "csharp"
+  },
+  {
+    "id": "web-application-builder",
+    "en": "WebApplicationBuilder",
+    "ar": "باني تطبيق الويب (WebApplicationBuilder)",
+    "definition": {
+      "ar": "يأتي من WebApplication.CreateBuilder(args) ويجهّز الإعدادات والتسجيل (Logging) وحاوية الخدمات قبل بناء التطبيق.",
+      "en": "Returned by WebApplication.CreateBuilder(args); sets up configuration, logging and the service container before Build()."
+    },
+    "snippet": "var builder = WebApplication.CreateBuilder(args);\nbuilder.Services.AddScoped<ProgressService>();",
+    "related": [
+      "program-cs",
+      "configuration",
+      "dependency-injection"
+    ],
+    "lesson": "p1-program-config",
+    "category": "aspnet"
+  },
+  {
+    "id": "middleware",
+    "en": "Middleware",
+    "ar": "البرمجيات الوسيطة (Middleware)",
+    "definition": {
+      "ar": "مكونات مرتبة في خط (Pipeline) يمر عبرها كل طلب HTTP، كل واحد يمكنه فحص الطلب أو تعديله أو إنهاءه. (تفصيل كامل في المرحلة 2)",
+      "en": "Components arranged in a pipeline that every HTTP request passes through. (Deep dive in Phase 2.)"
+    },
+    "snippet": "app.UseExceptionHandler();\napp.UseStaticFiles();\napp.MapControllers();",
+    "related": [
+      "program-cs"
+    ],
+    "lesson": "p1-program-config",
+    "category": "aspnet"
+  },
+  {
+    "id": "appsettings-json",
+    "en": "appsettings.json",
+    "ar": "ملف الإعدادات appsettings.json",
+    "definition": {
+      "ar": "ملف JSON للإعدادات غير السرية (مستوى التسجيل، والإعدادات العامة). ويُضاف فوقه appsettings.{Environment}.json حسب البيئة.",
+      "en": "JSON file for non-secret settings, layered with appsettings.{Environment}.json."
+    },
+    "snippet": "{\n  \"Logging\": { \"LogLevel\": { \"Default\": \"Information\" } },\n  \"ConnectionStrings\": { \"Default\": \"Data Source=learn.db\" }\n}",
+    "related": [
+      "configuration",
+      "environment"
+    ],
+    "lesson": "p1-program-config",
+    "category": "aspnet"
+  },
+  {
+    "id": "configuration",
+    "en": "Configuration (IConfiguration)",
+    "ar": "نظام الإعدادات (IConfiguration)",
+    "definition": {
+      "ar": "نظام يجمع الإعدادات من عدة مصادر بترتيب، والمصدر الأخير يفوز، ويعرضها كمفاتيح نصية مثل \"Logging:LogLevel:Default\" لا تهتم بحالة الأحرف.",
+      "en": "Merges settings from several providers in order (last wins) into case-insensitive keys like \"Logging:LogLevel:Default\"."
+    },
+    "snippet": "var timeout = builder.Configuration.GetValue<int>(\"Sandbox:TimeoutSeconds\");\nvar cs = builder.Configuration.GetConnectionString(\"Default\");",
+    "related": [
+      "configuration-provider",
+      "configuration-key",
+      "appsettings-json",
+      "options-pattern"
+    ],
+    "lesson": "p1-program-config",
+    "category": "aspnet"
+  },
+  {
+    "id": "configuration-key",
+    "en": "Configuration key",
+    "ar": "مفتاح الإعداد",
+    "definition": {
+      "ar": "اسم الإعداد بعد التسطيح، والأقسام تفصلها النقطتان \":\". في متغيرات البيئة تُكتب \"__\" بدل \":\" لأن بعض الأنظمة لا تقبل \":\" في الأسماء.",
+      "en": "A flattened setting name with sections separated by \":\"; environment variables use \"__\" instead."
+    },
+    "snippet": "Logging:LogLevel:Default      // in code\nLogging__LogLevel__Default    // as an environment variable",
+    "related": [
+      "configuration",
+      "environment-variables"
+    ],
+    "lesson": "p1-program-config",
+    "category": "aspnet"
+  },
+  {
+    "id": "configuration-provider",
+    "en": "Configuration provider",
+    "ar": "مزوّد الإعدادات",
+    "definition": {
+      "ar": "مصدر واحد للإعدادات: ملف JSON، أو متغيرات البيئة، أو سطر الأوامر، أو User Secrets، أو Azure Key Vault.",
+      "en": "One source of settings: JSON file, environment variables, command line, user secrets, Key Vault..."
+    },
+    "snippet": null,
+    "related": [
+      "configuration"
+    ],
+    "lesson": "p1-program-config",
+    "category": "aspnet"
+  },
+  {
+    "id": "environment-variables",
+    "en": "Environment variables",
+    "ar": "متغيرات البيئة",
+    "definition": {
+      "ar": "قيم يحددها نظام التشغيل أو Docker للعملية. الطريقة القياسية لتمرير الإعدادات والأسرار في الإنتاج، وهي تستبدل قيم appsettings.json.",
+      "en": "OS-level key/values; the standard way to pass settings and secrets in production. They override appsettings.json."
+    },
+    "snippet": "ASPNETCORE_ENVIRONMENT=Production\nConnectionStrings__Default=\"Server=db;Database=shop\"",
+    "related": [
+      "configuration",
+      "configuration-key",
+      "environment"
+    ],
+    "lesson": "p1-program-config",
+    "category": "aspnet"
+  },
+  {
+    "id": "environment",
+    "en": "Hosting environment",
+    "ar": "بيئة الاستضافة (Environment)",
+    "definition": {
+      "ar": "اسم البيئة الحالية: Development أو Staging أو Production (الافتراضية). تُحدد بـ ASPNETCORE_ENVIRONMENT وتغيّر السلوك، مثل صفحات الأخطاء المفصلة في التطوير فقط.",
+      "en": "Development, Staging or Production (default), set by ASPNETCORE_ENVIRONMENT; changes behaviour like detailed error pages."
+    },
+    "snippet": "if (app.Environment.IsDevelopment())\n{\n    app.MapOpenApi();\n}",
+    "related": [
+      "environment-variables",
+      "appsettings-json",
+      "launch-settings"
+    ],
+    "lesson": "p1-program-config",
+    "category": "aspnet"
+  },
+  {
+    "id": "user-secrets",
+    "en": "User Secrets",
+    "ar": "الأسرار المحلية (User Secrets)",
+    "definition": {
+      "ar": "مكان آمن خارج المشروع لحفظ الأسرار أثناء التطوير (مفاتيح API وكلمات المرور) حتى لا تُرفع إلى Git. تعمل في بيئة Development فقط.",
+      "en": "Development-only secret storage outside the repo, so keys never get committed."
+    },
+    "snippet": "dotnet user-secrets init\ndotnet user-secrets set \"Stripe:ApiKey\" \"sk_test_...\"",
+    "related": [
+      "configuration",
+      "environment"
+    ],
+    "lesson": "p1-program-config",
+    "category": "aspnet"
+  },
+  {
+    "id": "options-pattern",
+    "en": "Options pattern",
+    "ar": "نمط الخيارات (Options pattern)",
+    "definition": {
+      "ar": "ربط قسم من الإعدادات بصنف C# عادي ليُحقن كـ IOptions<T>، بدلاً من قراءة نصوص الإعدادات يدوياً. (تفصيل في المرحلة 3)",
+      "en": "Binding a configuration section to a C# class injected as IOptions<T>. (Deep dive in Phase 3.)"
+    },
+    "snippet": "builder.Services.Configure<SandboxOptions>(builder.Configuration.GetSection(\"Sandbox\"));\npublic class Runner(IOptions<SandboxOptions> options) { }",
+    "related": [
+      "configuration",
+      "dependency-injection"
+    ],
+    "lesson": "p1-program-config",
+    "category": "aspnet"
+  },
+  {
+    "id": "json",
+    "en": "JSON & System.Text.Json",
+    "ar": "JSON و System.Text.Json",
+    "definition": {
+      "ar": "صيغة البيانات الأساسية في الـ APIs. ‎.NET يأتي بمكتبة System.Text.Json المدمجة للتحويل بين JSON وكائنات C#، وتستخدم camelCase افتراضياً في ASP.NET Core.",
+      "en": "The data format of web APIs; .NET ships System.Text.Json (camelCase by default in ASP.NET Core)."
+    },
+    "snippet": "var json = JsonSerializer.Serialize(new { Name = \"Pen\" }); // {\"Name\":\"Pen\"}\nvar p = JsonSerializer.Deserialize<Product>(json);",
+    "related": [
+      "dto",
+      "appsettings-json"
+    ],
+    "lesson": "p1-program-config",
+    "category": "dotnet"
+  }
+]

@@ -1,0 +1,457 @@
+{
+  "id": "p0-types",
+  "title": {
+    "ar": "الأنواع والمتغيرات",
+    "en": "Types & Variables"
+  },
+  "summary": {
+    "ar": "لماذا C# صارمة الأنواع، والفرق الجوهري بين أنواع القيمة والأنواع المرجعية، ولماذا decimal للمال.",
+    "en": "Why C# is strongly typed, value vs reference types, and why money uses decimal."
+  },
+  "minutes": 25,
+  "terms": [
+    "strongly-typed",
+    "compiler",
+    "reference-type",
+    "type-inference",
+    "value-type",
+    "decimal",
+    "integer-division",
+    "string-interpolation",
+    "casting",
+    "exception"
+  ],
+  "exercises": [
+    "p0-ex-price"
+  ],
+  "sections": [
+    {
+      "type": "text",
+      "ar": "في JavaScript تستطيع كتابة `let x = 5; x = \"five\";` ولن يعترض أحد حتى يتعطل شيء وقت التشغيل. أما C# فهي لغة [[strongly-typed]]: كل متغير له نوع ثابت يعرفه [[compiler]] قبل أن يعمل البرنامج، وأي خلط بين الأنواع يظهر كخطأ أحمر في المحرر فوراً.\n\nهذا هو أول تغيير في طريقة التفكير: في JavaScript تكتشف الأخطاء عندما يجربها المستخدم، وفي C# يكتشفها المترجم عنك قبل التشغيل.",
+      "en": "In JavaScript `let x = 5; x = \"five\";` is fine until something breaks at runtime. C# is strongly typed: every variable has a fixed type known at compile time, so mixing types is a red squiggle before you ever run the program."
+    },
+    {
+      "type": "analogy",
+      "ar": "فكّر في الأنواع كأشكال المقابس الكهربائية. JavaScript مثل محوّل عالمي يقبل أي مقبس ويحاول التكيّف، أحياناً بنجاح وأحياناً بشرارة! أما C# فكل مقبس له شكل محدد، ولا يدخل المقبس الخطأ أصلاً. يبدو ذلك مزعجاً أولاً، لكنه يمنع الحرائق.",
+      "en": "Types are like plug shapes: JavaScript is a universal adapter that tries to make anything fit (sometimes with sparks); C# plugs only fit the right socket."
+    },
+    {
+      "type": "compare",
+      "title": {
+        "ar": "نفس الفكرة في ثلاث لغات",
+        "en": "The same idea in three languages"
+      },
+      "items": [
+        {
+          "lang": "javascript",
+          "label": "JavaScript",
+          "code": "let count = 5;\ncount = \"five\";      // OK, no complaint\nconsole.log(count * 2); // NaN at runtime"
+        },
+        {
+          "lang": "php",
+          "label": "PHP",
+          "code": "$count = 5;\n$count = \"five\";     // OK\necho $count * 2;      // TypeError (PHP 8) at runtime"
+        },
+        {
+          "lang": "csharp",
+          "label": "C#",
+          "code": "int count = 5;\ncount = \"five\";      // CS0029: won't even compile\nConsole.WriteLine(count * 2);"
+        }
+      ],
+      "note": {
+        "ar": "C# تنقل الخطأ من «وقت التشغيل» إلى «وقت الترجمة». هذا أهم سبب لاستخدامها في أنظمة الشركات الكبيرة.",
+        "en": "C# moves the error from runtime to compile time."
+      }
+    },
+    {
+      "type": "heading",
+      "ar": "الأنواع الأساسية",
+      "en": "Built-in types"
+    },
+    {
+      "type": "table",
+      "headers": [
+        {
+          "ar": "النوع",
+          "en": "Type"
+        },
+        {
+          "ar": "ماذا يخزن",
+          "en": "Holds"
+        },
+        {
+          "ar": "مثال",
+          "en": "Example"
+        },
+        {
+          "ar": "ملاحظة",
+          "en": "Note"
+        }
+      ],
+      "rows": [
+        [
+          "`int`",
+          "عدد صحيح 32-bit",
+          "`int age = 30;`",
+          "من -2.1 مليار إلى +2.1 مليار"
+        ],
+        [
+          "`long`",
+          "عدد صحيح 64-bit",
+          "`long views = 5_000_000_000;`",
+          "للأرقام الكبيرة جداً"
+        ],
+        [
+          "`double`",
+          "عدد عشري ثنائي",
+          "`double ratio = 0.75;`",
+          "سريع لكن فيه أخطاء تقريب صغيرة"
+        ],
+        [
+          "`decimal`",
+          "عدد عشري بالأساس 10",
+          "`decimal price = 19.99m;`",
+          "**للمال دائماً**، الحرف m إلزامي"
+        ],
+        [
+          "`bool`",
+          "true أو false",
+          "`bool isPaid = true;`",
+          "لا يُحوَّل تلقائياً من 0 و 1 كما في PHP"
+        ],
+        [
+          "`char`",
+          "حرف واحد",
+          "`char grade = 'A';`",
+          "علامة اقتباس مفردة"
+        ],
+        [
+          "`string`",
+          "نص",
+          "`string name = \"Sara\";`",
+          "علامة اقتباس مزدوجة، وهو [[reference-type]]"
+        ],
+        [
+          "`DateTime`",
+          "تاريخ ووقت",
+          "`var now = DateTime.UtcNow;`",
+          "وأيضاً `DateOnly` و `TimeOnly`"
+        ]
+      ]
+    },
+    {
+      "type": "text",
+      "ar": "الكلمة `var` لا تعني «أي نوع» كما في JavaScript. هي [[type-inference]]: المترجم يستنتج النوع من القيمة ثم **يثبّته**. `var total = 9.99m;` تعني تماماً `decimal total = 9.99m;`.",
+      "en": "`var` doesn't mean \"any type\": the compiler infers the type and then fixes it."
+    },
+    {
+      "type": "heading",
+      "ar": "أنواع القيمة والأنواع المرجعية",
+      "en": "Value types vs reference types"
+    },
+    {
+      "type": "text",
+      "ar": "هذا أهم مفهوم في هذا الدرس، وسيفسر لك لاحقاً سلوك EF Core و Dependency Injection:\n\n- [[value-type]] (مثل `int` و `decimal` و `bool` و `struct`): المتغير يحمل **القيمة نفسها**. عند الإسناد `b = a` تُنسخ القيمة، فتغيير b لا يؤثر على a.\n- [[reference-type]] (مثل `class` و `string` والمصفوفات): المتغير يحمل **عنواناً** يشير لكائن في الذاكرة. عند الإسناد يُنسخ العنوان فقط، فيشير المتغيران لنفس الكائن.\n\nفي JavaScript نفس الشيء تقريباً: الأرقام تُنسخ، والكائنات `{}` تُمرر بالمرجع. الفرق أن C# تسمح لك بصنع أنواع قيمة خاصة بك (`struct`).",
+      "en": "Value types hold the data; reference types hold a reference to an object. Assignment copies the value or the reference respectively."
+    },
+    {
+      "type": "visual",
+      "name": "stack-heap",
+      "caption": {
+        "ar": "نفّذ الكود سطراً سطراً وراقب ما يحدث في الـ Stack والـ Heap.",
+        "en": "Step through the code and watch the stack and the heap."
+      }
+    },
+    {
+      "type": "annotated",
+      "lang": "csharp",
+      "title": {
+        "ar": "القيمة مقابل المرجع",
+        "en": "Value vs reference"
+      },
+      "code": "int a = 5;\nint b = a;\nb = 10;\nConsole.WriteLine(a);\n\nvar p1 = new Point { X = 1 };\nvar p2 = p1;\np2.X = 99;\nConsole.WriteLine(p1.X);\n\nclass Point { public int X { get; set; } }",
+      "notes": {
+        "1": {
+          "ar": "`a` نوع قيمة: الرقم 5 مخزّن داخل المتغير نفسه.",
+          "en": "`a` is a value type: 5 lives inside the variable."
+        },
+        "2": {
+          "ar": "الإسناد **ينسخ** القيمة، فأصبح لدينا رقمان 5 منفصلان.",
+          "en": "Assignment copies the value."
+        },
+        "3": {
+          "ar": "نغيّر b فقط. a لا تتأثر.",
+          "en": "Only b changes."
+        },
+        "4": {
+          "ar": "يطبع 5.",
+          "en": "Prints 5."
+        },
+        "6": {
+          "ar": "`new` تنشئ كائناً في الـ Heap، و p1 يحمل عنوانه فقط.",
+          "en": "`new` creates an object on the heap; p1 holds its reference."
+        },
+        "7": {
+          "ar": "نسخ **العنوان** وليس الكائن: p1 و p2 يشيران لنفس الكائن.",
+          "en": "Copies the reference, not the object."
+        },
+        "8": {
+          "ar": "نعدّل الكائن المشترك عبر p2.",
+          "en": "Modifies the shared object."
+        },
+        "9": {
+          "ar": "يطبع 99! لأن p1 يرى نفس الكائن.",
+          "en": "Prints 99: same object."
+        },
+        "11": {
+          "ar": "صنف (class) = نوع مرجعي. لو كان `struct` لطبع السطر 9 القيمة 1.",
+          "en": "A class is a reference type; with `struct`, line 9 would print 1."
+        }
+      }
+    },
+    {
+      "type": "heading",
+      "ar": "لماذا decimal للمال؟",
+      "en": "Why decimal for money?"
+    },
+    {
+      "type": "text",
+      "ar": "الحاسوب يخزّن `double` بالنظام الثنائي، والعدد 0.1 لا يمكن تمثيله بدقة في النظام الثنائي، تماماً كما لا يمكن كتابة 1/3 بدقة في النظام العشري. لهذا `0.1 + 0.2` في JavaScript تعطي `0.30000000000000004`.\n\nالنوع [[decimal]] يخزّن الأرقام بالأساس 10، فـ `0.1m + 0.2m == 0.3m` صحيحة دائماً. هو أبطأ قليلاً، لكن في الحسابات المالية الدقة أهم من السرعة. وفي قاعدة البيانات يقابله `decimal(18,2)`.",
+      "en": "double is binary floating point (0.1 + 0.2 != 0.3); decimal is base-10 and exact for money."
+    },
+    {
+      "type": "code",
+      "lang": "csharp",
+      "code": "Console.WriteLine(0.1 + 0.2);            // 0.30000000000000004\nConsole.WriteLine(0.1m + 0.2m);          // 0.3\nConsole.WriteLine(7 / 2);                // 3   (integer division!)\nConsole.WriteLine(7 / 2.0);              // 3.5\nConsole.WriteLine(7m / 2);               // 3.5\nConsole.WriteLine($\"{1234.5m:N2}\");      // 1,234.50\nConsole.WriteLine(int.TryParse(\"42x\", out var n) ? n : -1); // -1",
+      "title": {
+        "ar": "جرّبها في الـ Playground",
+        "en": "Try it in the Playground"
+      },
+      "runnable": true
+    },
+    {
+      "type": "callout",
+      "kind": "warning",
+      "ar": "**[[integer-division]]**: عندما يكون طرفا القسمة من نوع `int` تكون النتيجة `int` ويُحذف الكسر. `percent / 100` تعطي 0 لأي نسبة أقل من 100! حوّل أحد الطرفين: `percent / 100m`.",
+      "en": "int / int drops the fraction: percent / 100 is 0 below 100."
+    },
+    {
+      "type": "text",
+      "ar": "**[[string-interpolation]]**: ضع `$` قبل النص واكتب القيم داخل `{ }`. ويمكنك إضافة تنسيق بعد نقطتين: `{price:N2}` لخانتين عشريتين مع فاصل الآلاف، و `{date:yyyy-MM-dd}` للتاريخ.\n\n**التحويل بين الأنواع ([[casting]])**: `(int)3.9` تعطي 3 (تحذف الكسر ولا تقرّب)، و `int.Parse(\"42\")` ترمي [[exception]] إذا كان النص غير صالح، و `int.TryParse` ترجع `false` بدون استثناء، وهي الأفضل لمدخلات المستخدم.",
+      "en": "String interpolation with format specifiers; casting truncates; prefer TryParse for user input."
+    },
+    {
+      "type": "source",
+      "path": "Backend/LearnBackend.Api/Services/SpacedRepetition.cs",
+      "find": "public const double MinEase = 1.3;",
+      "context": 4,
+      "note": {
+        "ar": "في هذا التطبيق: ثابت من نوع `double` في خوارزمية التكرار المتباعد. هنا double مناسب لأنه ليس مالاً، ولا يضر خطأ تقريب صغير.",
+        "en": "In this app: a double constant in the spaced repetition algorithm, fine here because it isn't money."
+      }
+    },
+    {
+      "type": "source",
+      "path": "Backend/LearnBackend.Api/CodeRunner/CodeRunnerModels.cs",
+      "find": "public int TimeoutSeconds { get; set; } = 5;",
+      "context": 3,
+      "note": {
+        "ar": "خصائص من نوع `int` بقيم افتراضية لإعدادات الـ Sandbox الذي يشغّل كودك.",
+        "en": "int properties with default values for the sandbox settings."
+      }
+    },
+    {
+      "type": "mistakes",
+      "items": [
+        {
+          "title": {
+            "ar": "استخدام double للأسعار",
+            "en": "Using double for prices"
+          },
+          "wrong": "double total = 0.1 + 0.2; // 0.30000000000000004",
+          "right": "decimal total = 0.1m + 0.2m; // 0.3",
+          "ar": "أخطاء التقريب الصغيرة تتراكم في الفواتير والتقارير. المال = decimal دائماً.",
+          "en": "Rounding errors accumulate; money is always decimal."
+        },
+        {
+          "title": {
+            "ar": "نسيان الحرف m",
+            "en": "Forgetting the m suffix"
+          },
+          "wrong": "decimal price = 19.99; // CS0664",
+          "right": "decimal price = 19.99m;",
+          "ar": "الرقم 19.99 بدون لاحقة هو double، ولا يتحول تلقائياً إلى decimal لأن ذلك قد يفقد دقة.",
+          "en": "19.99 is a double literal; add m."
+        },
+        {
+          "title": {
+            "ar": "int.Parse على مدخلات المستخدم",
+            "en": "int.Parse on user input"
+          },
+          "wrong": "int age = int.Parse(input); // FormatException if input is \"abc\"",
+          "right": "if (!int.TryParse(input, out var age)) return \"Invalid age\";",
+          "ar": "لا تثق بمدخلات المستخدم أبداً. TryParse لا ترمي استثناء.",
+          "en": "Never trust user input; TryParse doesn't throw."
+        },
+        {
+          "title": {
+            "ar": "توقع أن تعديل نسخة struct يغيّر الأصل",
+            "en": "Expecting a struct copy to change the original"
+          },
+          "wrong": "var p = points[0];\np.X = 5; // points[0] unchanged if Point is a struct",
+          "right": "points[0] = points[0] with { X = 5 }; // or use a class",
+          "ar": "أنواع القيمة تُنسخ عند الإسناد، فأنت تعدّل نسخة.",
+          "en": "Value types are copied on assignment."
+        }
+      ]
+    }
+  ],
+  "quiz": [
+    {
+      "question": {
+        "ar": "ما ناتج `Console.WriteLine(7 / 2);` في C#؟",
+        "en": "What does `Console.WriteLine(7 / 2);` print?"
+      },
+      "options": [
+        {
+          "ar": "3.5",
+          "en": "3.5"
+        },
+        {
+          "ar": "3",
+          "en": "3"
+        },
+        {
+          "ar": "4",
+          "en": "4"
+        },
+        {
+          "ar": "خطأ ترجمة",
+          "en": "A compile error"
+        }
+      ],
+      "answer": 1,
+      "explanation": {
+        "ar": "القسمة بين int و int تعطي int ويُحذف الكسر (Integer division).",
+        "en": "int / int is integer division."
+      }
+    },
+    {
+      "question": {
+        "ar": "أي نوع تستخدم لتخزين سعر منتج؟",
+        "en": "Which type should store a product price?"
+      },
+      "options": [
+        {
+          "ar": "double",
+          "en": "double"
+        },
+        {
+          "ar": "float",
+          "en": "float"
+        },
+        {
+          "ar": "decimal",
+          "en": "decimal"
+        },
+        {
+          "ar": "int",
+          "en": "int"
+        }
+      ],
+      "answer": 2,
+      "explanation": {
+        "ar": "decimal دقيق بالأساس 10 ولا يعاني من أخطاء التقريب الثنائية.",
+        "en": "decimal is exact base-10."
+      }
+    },
+    {
+      "question": {
+        "ar": "ماذا يطبع هذا الكود؟",
+        "en": "What does this print?"
+      },
+      "options": [
+        {
+          "ar": "1",
+          "en": "1"
+        },
+        {
+          "ar": "99",
+          "en": "99"
+        },
+        {
+          "ar": "0",
+          "en": "0"
+        },
+        {
+          "ar": "خطأ",
+          "en": "Error"
+        }
+      ],
+      "answer": 1,
+      "explanation": {
+        "ar": "Box صنف (نوع مرجعي)، فـ a و b يشيران لنفس الكائن.",
+        "en": "Box is a class: a and b reference the same object."
+      },
+      "code": "class Box { public int V; }\nvar a = new Box { V = 1 };\nvar b = a;\nb.V = 99;\nConsole.WriteLine(a.V);"
+    },
+    {
+      "question": {
+        "ar": "ماذا تعني `var total = 10m;`؟",
+        "en": "What does `var total = 10m;` mean?"
+      },
+      "options": [
+        {
+          "ar": "total يمكن أن يحمل أي نوع لاحقاً",
+          "en": "total can hold any type later"
+        },
+        {
+          "ar": "total من نوع decimal ولا يتغير نوعه",
+          "en": "total is a decimal and stays a decimal"
+        },
+        {
+          "ar": "total من نوع dynamic",
+          "en": "total is dynamic"
+        },
+        {
+          "ar": "خطأ: var تحتاج نوعاً صريحاً",
+          "en": "Error: var needs an explicit type"
+        }
+      ],
+      "answer": 1,
+      "explanation": {
+        "ar": "var استنتاج نوع وقت الترجمة، والنوع يبقى ثابتاً.",
+        "en": "var is compile-time inference; the type is fixed."
+      }
+    },
+    {
+      "question": {
+        "ar": "ما الطريقة الأفضل لتحويل نص أدخله المستخدم إلى رقم؟",
+        "en": "Best way to convert user-typed text to a number?"
+      },
+      "options": [
+        {
+          "ar": "(int)input",
+          "en": "(int)input"
+        },
+        {
+          "ar": "int.Parse(input)",
+          "en": "int.Parse(input)"
+        },
+        {
+          "ar": "int.TryParse(input, out var n)",
+          "en": "int.TryParse(input, out var n)"
+        },
+        {
+          "ar": "Convert.ToInt32(input) دائماً",
+          "en": "Always Convert.ToInt32(input)"
+        }
+      ],
+      "answer": 2,
+      "explanation": {
+        "ar": "TryParse لا ترمي استثناء وتخبرك بنجاح التحويل. أما (int) على string فلا يُترجم أصلاً.",
+        "en": "TryParse never throws; casting a string doesn't compile."
+      }
+    }
+  ]
+}

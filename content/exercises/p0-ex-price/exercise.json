@@ -1,0 +1,16 @@
+{
+  "id": "p0-ex-price",
+  "title": { "ar": "حاسبة الأسعار", "en": "Price Calculator" },
+  "kind": "exercise",
+  "difficulty": "easy",
+  "terms": ["decimal", "value-type", "string-interpolation", "exception"],
+  "prompt": {
+    "ar": "أنت تبني جزءاً من متجر إلكتروني. أكمل الصنف الثابت `PriceCalculator`:\n\n- `Subtotal(unitPrice, quantity)`: سعر الوحدة × الكمية. إذا كان السعر أو الكمية سالباً ارمِ `ArgumentOutOfRangeException`.\n- `ApplyDiscount(amount, percent)`: طبّق خصماً بنسبة مئوية من 0 إلى 100 (خارج هذا المدى ارمِ `ArgumentOutOfRangeException`)، وقرّب النتيجة لخانتين عشريتين بـ `MidpointRounding.AwayFromZero`.\n- `Total(unitPrice, quantity, discountPercent, taxRate)`: المجموع بعد الخصم × (1 + نسبة الضريبة)، مقرّب لخانتين. مثال: taxRate = 0.16 تعني 16%.\n- `Format(amount)`: يرجع النص بالشكل `\"1,234.50 USD\"` (فاصل الآلاف وخانتان عشريتان).\n\n**انتبه:** استخدم [[decimal]] للمال وليس double، وانتبه للقسمة بين عددين صحيحين (int / int).",
+    "en": "Complete the static class `PriceCalculator`:\n\n- `Subtotal(unitPrice, quantity)`: unit price × quantity; throw `ArgumentOutOfRangeException` if either is negative.\n- `ApplyDiscount(amount, percent)`: apply a 0–100 percent discount (otherwise throw `ArgumentOutOfRangeException`), rounded to 2 decimals with `MidpointRounding.AwayFromZero`.\n- `Total(unitPrice, quantity, discountPercent, taxRate)`: discounted subtotal × (1 + taxRate), rounded to 2 decimals. taxRate = 0.16 means 16%.\n- `Format(amount)`: returns text like `\"1,234.50 USD\"`.\n\n**Watch out:** use `decimal` for money, and beware of integer division (int / int)."
+  },
+  "hints": [
+    { "ar": "للتحقق من المدى بأسلوب حديث: `if (percent is < 0 or > 100) throw new ArgumentOutOfRangeException(nameof(percent));`", "en": "Range check: `if (percent is < 0 or > 100) throw new ArgumentOutOfRangeException(nameof(percent));`" },
+    { "ar": "`percent / 100` حيث percent من نوع int تعطي 0 دائماً لأي قيمة أقل من 100! اقسم على `100m` (الحرف m يجعل الرقم decimal)، أو اضرب أولاً: `amount * (100 - percent) / 100m`.", "en": "`percent / 100` with an int percent is always 0 below 100! Divide by `100m`, or multiply first: `amount * (100 - percent) / 100m`." },
+    { "ar": "التقريب: `Math.Round(value, 2, MidpointRounding.AwayFromZero)`. والتنسيق: `$\"{amount:N2} USD\"`. في Total أعد استخدام Subtotal و ApplyDiscount بدلاً من تكرار المنطق.", "en": "Rounding: `Math.Round(value, 2, MidpointRounding.AwayFromZero)`. Formatting: `$\"{amount:N2} USD\"`. In Total, reuse Subtotal and ApplyDiscount." }
+  ]
+}

@@ -1,0 +1,68 @@
+{
+  "phases": [
+    {
+      "id": 0,
+      "slug": "csharp-essentials",
+      "title": { "ar": "أساسيات C# لمطوري الويب", "en": "C# Essentials for Web Developers" },
+      "description": { "ar": "الأنواع، الأصناف، الواجهات، Generics، LINQ، async/await، Nullable، و Records، مع مقارنة دائمة بـ JavaScript و PHP.", "en": "Types, classes, interfaces, generics, LINQ, async/await, nullable types and records, always compared to JavaScript and PHP." },
+      "lessons": ["p0-types", "p0-classes", "p0-interfaces", "p0-generics", "p0-linq", "p0-async", "p0-nullable", "p0-records"],
+      "project": "p0-project-library"
+    },
+    {
+      "id": 1,
+      "slug": "dotnet-ecosystem",
+      "title": { "ar": "منظومة ‎.NET", "en": "The .NET Ecosystem" },
+      "description": { "ar": "‎.NET مقابل ‎.NET Framework، الـ SDK والـ Runtime والـ CLR، NuGet، أداة dotnet، وبنية المشروع (‎.csproj و Program.cs و appsettings.json).", "en": ".NET vs .NET Framework, SDK, runtime, CLR, NuGet, the dotnet CLI and project structure (.csproj, Program.cs, appsettings.json)." },
+      "lessons": ["p1-dotnet-landscape", "p1-runtime", "p1-nuget", "p1-cli", "p1-project-structure", "p1-program-config"],
+      "project": "p1-project-config"
+    },
+    {
+      "id": 2,
+      "slug": "backend-fundamentals",
+      "title": { "ar": "أساسيات الـ Backend", "en": "Backend Fundamentals" },
+      "description": { "ar": "دورة حياة طلب HTTP، خط الـ Middleware، التوجيه (Routing)، Controllers مقابل Minimal APIs، ربط النماذج (Model Binding)، التحقق (Validation)، ونتائج الأفعال (Action Results).", "en": "HTTP lifecycle, middleware pipeline, routing, controllers vs minimal APIs, model binding, validation, action results and status codes." },
+      "lessons": [],
+      "project": null
+    },
+    {
+      "id": 3,
+      "slug": "architecture",
+      "title": { "ar": "المعمارية", "en": "Architecture" },
+      "description": { "ar": "حقن الاعتماديات (Dependency Injection) وأعمارها، الخدمات، الإعدادات ونمط Options، التسجيل (Logging)، البيئات، الفلاتر، ومعالجة الأخطاء.", "en": "Dependency injection and lifetimes, services, configuration and the options pattern, logging, environments, filters and exception handling." },
+      "lessons": [],
+      "project": null
+    },
+    {
+      "id": 4,
+      "slug": "data",
+      "title": { "ar": "البيانات", "en": "Data" },
+      "description": { "ar": "EF Core، الـ DbContext، الكيانات، الترحيلات (Migrations)، العلاقات، استعلامات LINQ، نمط Repository، الـ DTOs، و AutoMapper.", "en": "EF Core, DbContext, entities, migrations, relationships, LINQ queries, the repository pattern, DTOs and AutoMapper." },
+      "lessons": [],
+      "project": null
+    },
+    {
+      "id": 5,
+      "slug": "security",
+      "title": { "ar": "الأمان", "en": "Security" },
+      "description": { "ar": "المصادقة مقابل التفويض، ASP.NET Identity، JWT، الـ Claims والأدوار والسياسات، CORS، HTTPS، وتشفير كلمات المرور.", "en": "Authentication vs authorization, ASP.NET Identity, JWT, claims, roles, policies, CORS, HTTPS and password hashing." },
+      "lessons": [],
+      "project": null
+    },
+    {
+      "id": 6,
+      "slug": "frontend-in-dotnet",
+      "title": { "ar": "الواجهات في ‎.NET", "en": "Frontend in .NET" },
+      "description": { "ar": "صياغة Razor، نمط MVC، Razor Pages، Tag Helpers، View Components، القوالب (Layouts)، Blazor، واستهلاك الـ Web API من React.", "en": "Razor, MVC, Razor Pages, tag helpers, view components, layouts, Blazor, and consuming the API from React." },
+      "lessons": [],
+      "project": null
+    },
+    {
+      "id": 7,
+      "slug": "pro-level",
+      "title": { "ar": "المستوى الاحترافي", "en": "Pro Level" },
+      "description": { "ar": "اختبارات الوحدة والتكامل، التخزين المؤقت (Caching)، الخدمات الخلفية، SignalR، Swagger/OpenAPI، النشر (IIS و Docker و Azure)، و Clean Architecture.", "en": "Unit and integration testing, caching, background services, SignalR, OpenAPI, deployment (IIS, Docker, Azure) and Clean Architecture." },
+      "lessons": [],
+      "project": null
+    }
+  ]
+}

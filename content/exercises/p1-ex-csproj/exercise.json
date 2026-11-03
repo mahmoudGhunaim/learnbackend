@@ -1,0 +1,16 @@
+{
+  "id": "p1-ex-csproj",
+  "title": { "ar": "قارئ ملف ‎.csproj", "en": ".csproj Reader" },
+  "kind": "exercise",
+  "difficulty": "medium",
+  "terms": ["csproj", "msbuild", "sdk-style-project", "package-reference", "project-reference", "target-framework"],
+  "prompt": {
+    "ar": "ملف [[csproj]] هو ملف XML يقرأه [[msbuild]]. اكتب `CsprojReader.Read(xml)` الذي يستخرج معلومات المشروع باستخدام `System.Xml.Linq` (الكلاس `XDocument`):\n\n- `Sdk`: قيمة الخاصية `Sdk` على العنصر الجذر `<Project>`، مثل `Microsoft.NET.Sdk.Web`.\n- `TargetFrameworks`: من `<TargetFramework>` (واحد) أو `<TargetFrameworks>` (عدة أُطر مفصولة بـ `;`، تجاهل الفراغات والعناصر الفارغة).\n- `OutputType`: من `<OutputType>`، والافتراضي `\"Library\"` إذا لم يوجد.\n- `NullableEnabled`: true إذا كانت `<Nullable>` تساوي `enable`. و `ImplicitUsings`: true إذا كانت `enable` أو `true` (بدون اعتبار لحالة الأحرف).\n- `Packages`: كل `<PackageReference Include=\"...\" Version=\"...\" />`. الإصدار قد يكون خاصية أو عنصراً فرعياً `<Version>`.\n- `ProjectReferences`: اسم كل مشروع مرجعي بدون المسار والامتداد: `..\\Shop.Core\\Shop.Core.csproj` → `Shop.Core`. انتبه: ملفات csproj تستخدم `\\` حتى على Linux!\n\nو `CsprojReader.IsWebProject(info)`: true إذا كان الـ Sdk هو `Microsoft.NET.Sdk.Web`.",
+    "en": "Use `XDocument` to read a .csproj: Sdk attribute, TargetFramework(s) (semicolon-separated), OutputType (default \"Library\"), Nullable/ImplicitUsings flags, PackageReferences (Version as attribute or child element) and ProjectReference names (`..\\Shop.Core\\Shop.Core.csproj` → `Shop.Core`; note the backslashes). `IsWebProject` checks for `Microsoft.NET.Sdk.Web`."
+  },
+  "hints": [
+    { "ar": "`var doc = XDocument.Parse(xml); var root = doc.Root!;` ثم `root.Attribute(\"Sdk\")?.Value`. للبحث عن عنصر في أي عمق: `root.Descendants(\"TargetFramework\").FirstOrDefault()?.Value`.", "en": "`XDocument.Parse`, `root.Attribute(\"Sdk\")?.Value`, and `root.Descendants(\"Name\")` to search at any depth." },
+    { "ar": "للأُطر المتعددة: `value.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)`. وللإصدار: `p.Attribute(\"Version\")?.Value ?? p.Element(\"Version\")?.Value ?? \"\"`.", "en": "`Split(';', RemoveEmptyEntries | TrimEntries)` and `Attribute(\"Version\")?.Value ?? Element(\"Version\")?.Value`." },
+    { "ar": "للاسم: استبدل `\\` بـ `/` أولاً ثم `Path.GetFileNameWithoutExtension(path)` (أضف `using System.IO;` في أعلى الملف). ولمقارنة النصوص بدون حالة الأحرف: `string.Equals(a, b, StringComparison.OrdinalIgnoreCase)`.", "en": "Replace `\\` with `/` before `Path.GetFileNameWithoutExtension` (add `using System.IO;`)." }
+  ]
+}

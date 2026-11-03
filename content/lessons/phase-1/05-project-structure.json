@@ -1,0 +1,390 @@
+{
+  "id": "p1-project-structure",
+  "title": {
+    "ar": "بنية المشروع و ‎.csproj",
+    "en": "Project Structure & .csproj"
+  },
+  "summary": {
+    "ar": "ماذا يوجد داخل مشروع ASP.NET Core: ملف ‎.csproj وما يعنيه كل سطر، والحل ‎.slnx، ومجلدا bin و obj، و Properties، ومراجع المشاريع، وكلها من هذا التطبيق نفسه.",
+    "en": "What's in an ASP.NET Core project: every .csproj line, the .slnx solution, bin/obj, Properties and project references, all from this very app."
+  },
+  "minutes": 25,
+  "terms": [
+    "msbuild",
+    "sdk-style-project",
+    "tfm",
+    "implicit-usings",
+    "project-reference",
+    "launch-settings",
+    "bin-obj",
+    "solution-file",
+    "global-json"
+  ],
+  "exercises": [
+    "p1-ex-csproj"
+  ],
+  "sections": [
+    {
+      "type": "text",
+      "ar": "أفضل طريقة لفهم بنية مشروع ‎.NET هي فتح مشروع حقيقي، وهذا التطبيق الذي تتعلم فيه مشروع ‎.NET حقيقي! استكشف الملفات في المستكشف أدناه، واضغط على أي ملف لترى محتواه الفعلي.",
+      "en": "The best way to learn the structure is to open a real project, and this app is one. Explore it below."
+    },
+    {
+      "type": "visual",
+      "name": "project-explorer",
+      "caption": {
+        "ar": "مستكشف ملفات هذا التطبيق. اضغط على أي ملف.",
+        "en": "This app's file explorer: click any file."
+      }
+    },
+    {
+      "type": "analogy",
+      "ar": "الحل (Solution) مثل مجمّع سكني، وكل مشروع (Project) عمارة فيه، وملف ‎.csproj هو «مخطط العمارة» الذي يقرؤه المقاول [[msbuild]]: ما المواد (الحزم)، وما العمارات المجاورة التي نتصل بها (Project references)، ولأي بلد نبني (Target framework).",
+      "en": "A solution is a residential complex, each project a building, and the .csproj the blueprint read by MSBuild."
+    },
+    {
+      "type": "heading",
+      "ar": "ملف ‎.csproj سطراً سطراً",
+      "en": "The .csproj line by line"
+    },
+    {
+      "type": "annotated",
+      "lang": "xml",
+      "title": {
+        "ar": "‎.csproj مبسّط لهذا التطبيق",
+        "en": "A simplified .csproj from this app"
+      },
+      "code": "<Project Sdk=\"Microsoft.NET.Sdk.Web\">\n\n  <PropertyGroup>\n    <TargetFramework>net10.0</TargetFramework>\n    <Nullable>enable</Nullable>\n    <ImplicitUsings>enable</ImplicitUsings>\n    <RootNamespace>LearnBackend.Api</RootNamespace>\n  </PropertyGroup>\n\n  <ItemGroup>\n    <PackageReference Include=\"Microsoft.EntityFrameworkCore.Sqlite\" Version=\"10.0.14\" />\n  </ItemGroup>\n\n  <ItemGroup>\n    <ProjectReference Include=\"..\\LearnBackend.Sandbox\\LearnBackend.Sandbox.csproj\" />\n  </ItemGroup>\n\n</Project>",
+      "notes": {
+        "1": {
+          "ar": "[[sdk-style-project]]: الـ SDK `Microsoft.NET.Sdk.Web` يجلب كل افتراضات تطبيقات الويب، ومنها إطار ASP.NET Core ودعم wwwroot و appsettings.json. ومكتبة عادية تستخدم `Microsoft.NET.Sdk`.",
+          "en": "The Web SDK brings ASP.NET Core defaults; class libraries use Microsoft.NET.Sdk."
+        },
+        "3": {
+          "ar": "PropertyGroup: إعدادات (Properties) بشكل مفتاح وقيمة.",
+          "en": "PropertyGroup: key/value settings."
+        },
+        "4": {
+          "ar": "[[tfm]]: إصدار ‎.NET المستهدف.",
+          "en": "The target framework."
+        },
+        "5": {
+          "ar": "تفعيل تحليل null، وهو موضوع درس Nullable.",
+          "en": "Enables nullable analysis."
+        },
+        "6": {
+          "ar": "[[implicit-usings]]: إضافة `global using` تلقائية لـ System و System.Linq وغيرها.",
+          "en": "Implicit global usings."
+        },
+        "7": {
+          "ar": "مساحة الأسماء الافتراضية للملفات الجديدة.",
+          "en": "Default namespace for new files."
+        },
+        "10": {
+          "ar": "ItemGroup: قوائم عناصر (ملفات وحزم ومراجع).",
+          "en": "ItemGroup: lists of items."
+        },
+        "11": {
+          "ar": "حزمة NuGet مع إصدارها الأدنى.",
+          "en": "A NuGet dependency."
+        },
+        "15": {
+          "ar": "[[project-reference]]: هذا المشروع يستخدم مشروعاً آخر في نفس الحل. لاحظ المسار بـ `\\` حتى على Linux.",
+          "en": "A project reference (backslash paths even on Linux)."
+        }
+      }
+    },
+    {
+      "type": "text",
+      "ar": "لاحظ ما **ليس** موجوداً: لا توجد قائمة بملفات ‎.cs! المشاريع الحديثة تضمّن تلقائياً كل ملف ‎.cs في المجلد وما تحته. هذا عكس ملفات ‎.NET Framework القديمة التي كانت تسرد كل ملف وتسبب تعارضات Git لا تنتهي.",
+      "en": "No list of .cs files: SDK-style projects include them automatically."
+    },
+    {
+      "type": "source",
+      "path": "Backend/LearnBackend.Api/LearnBackend.Api.csproj",
+      "find": "<EmbeddedResource Include=",
+      "context": 4,
+      "note": {
+        "ar": "مثال متقدم من هذا التطبيق: استثناء مجلد من الترجمة (`Compile Remove`) وتضمينه كمورد داخل الـ ‎.dll. هكذا يُخزن الـ Test harness الذي يُترجم مع كودك.",
+        "en": "Advanced: excluding a folder from compilation and embedding it as a resource."
+      }
+    },
+    {
+      "type": "heading",
+      "ar": "مجلدات وملفات مشروع ASP.NET Core",
+      "en": "Folders and files of an ASP.NET Core project"
+    },
+    {
+      "type": "table",
+      "headers": [
+        {
+          "ar": "المسار",
+          "en": "Path"
+        },
+        {
+          "ar": "الوظيفة",
+          "en": "Purpose"
+        },
+        {
+          "ar": "في Git؟",
+          "en": "In Git?"
+        }
+      ],
+      "rows": [
+        [
+          "`Program.cs`",
+          "نقطة البداية: الخدمات والـ Middleware والـ Endpoints",
+          "✅"
+        ],
+        [
+          "`appsettings.json`",
+          "الإعدادات (درس قادم)",
+          "✅ بدون أسرار"
+        ],
+        [
+          "`Properties/launchSettings.json`",
+          "[[launch-settings]]: كيف يُشغّل محلياً (المنفذ والبيئة)",
+          "✅"
+        ],
+        [
+          "`Controllers/` و `Endpoints/` و `Services/`...",
+          "تنظيم الكود. **مجرد اصطلاح**، والمترجم لا يهتم بأسماء المجلدات",
+          "✅"
+        ],
+        [
+          "`wwwroot/`",
+          "الملفات الثابتة (HTML و CSS و صور) التي تُرسل كما هي",
+          "✅"
+        ],
+        [
+          "`*.http`",
+          "ملف لتجربة طلبات HTTP من داخل المحرر",
+          "✅"
+        ],
+        [
+          "`bin/` و `obj/`",
+          "[[bin-obj]]: مخرجات البناء",
+          "❌ أبداً"
+        ]
+      ]
+    },
+    {
+      "type": "heading",
+      "ar": "الحل ‎.slnx",
+      "en": "The .slnx solution"
+    },
+    {
+      "type": "text",
+      "ar": "[[solution-file]] يجمع المشاريع. في ‎.NET 10 أصبح الافتراضي صيغة ‎.slnx الجديدة: XML بسيط ومقروء بدلاً من صيغة ‎.sln القديمة الغامضة. هذا التطبيق يحتوي ثلاثة مشاريع: API، وعامل العزل Sandbox، والاختبارات Tests.",
+      "en": ".NET 10 defaults to the readable XML .slnx format."
+    },
+    {
+      "type": "source",
+      "path": "LearnBackend.slnx",
+      "find": "<Project Path=",
+      "context": 6,
+      "note": {
+        "ar": "ملف الحل لهذا التطبيق: ثلاثة مشاريع داخل مجلد Backend.",
+        "en": "This app's solution: three projects."
+      }
+    },
+    {
+      "type": "source",
+      "path": "Backend/LearnBackend.Api/Properties/launchSettings.json",
+      "find": "\"applicationUrl\"",
+      "context": 5,
+      "note": {
+        "ar": "عندما تكتب `dotnet run` يقرأ هذا الملف: المنفذ، ومتغير البيئة ASPNETCORE_ENVIRONMENT=Development. لا يُستخدم في الإنتاج.",
+        "en": "Read by dotnet run locally: URL and environment. Not used in production."
+      }
+    },
+    {
+      "type": "callout",
+      "kind": "info",
+      "ar": "**مشاريع متعددة؟** المشاريع الحقيقية تُقسّم عادة: `Shop.Api` (الويب) و `Shop.Core` (منطق الأعمال) و `Shop.Infrastructure` (قاعدة البيانات) و `Shop.Tests`. ستتعلم السبب في Clean Architecture بالمرحلة 7. وملف `Directory.Build.props` في الجذر يطبّق إعدادات مشتركة (مثل Nullable) على كل المشاريع دفعة واحدة. وملف [[global-json]] يثبّت إصدار الـ SDK.",
+      "en": "Real apps split into Api/Core/Infrastructure/Tests; Directory.Build.props shares settings; global.json pins the SDK."
+    },
+    {
+      "type": "mistakes",
+      "items": [
+        {
+          "title": {
+            "ar": "رفع bin و obj",
+            "en": "Committing bin and obj"
+          },
+          "wrong": "git add Backend/  # includes bin/ obj/",
+          "right": "dotnet new gitignore",
+          "ar": "مئات الملفات الثنائية في كل commit، وتعارضات مستمرة.",
+          "en": "Binary noise and conflicts."
+        },
+        {
+          "title": {
+            "ar": "وضع الأسرار في launchSettings.json أو appsettings.json",
+            "en": "Secrets in launchSettings.json or appsettings.json"
+          },
+          "wrong": "\"Stripe__ApiKey\": \"sk_live_...\"",
+          "right": "dotnet user-secrets set \"Stripe:ApiKey\" \"sk_live_...\"",
+          "ar": "هذه الملفات تُرفع إلى Git. استخدم User Secrets محلياً ومتغيرات البيئة في الإنتاج.",
+          "en": "These files are committed."
+        },
+        {
+          "title": {
+            "ar": "مرجع دائري بين مشروعين",
+            "en": "Circular project references"
+          },
+          "wrong": "Shop.Core → Shop.Infrastructure → Shop.Core",
+          "right": "Shop.Infrastructure → Shop.Core (one direction only)",
+          "ar": "MSBuild يرفض المراجع الدائرية. التبعية تتجه في اتجاه واحد فقط.",
+          "en": "References must form a DAG."
+        }
+      ]
+    }
+  ],
+  "quiz": [
+    {
+      "question": {
+        "ar": "ما وظيفة السطر `<Project Sdk=\"Microsoft.NET.Sdk.Web\">`؟",
+        "en": "What does `<Project Sdk=\"Microsoft.NET.Sdk.Web\">` do?"
+      },
+      "options": [
+        {
+          "ar": "يحدد اسم المشروع",
+          "en": "Sets the project name"
+        },
+        {
+          "ar": "يجلب افتراضات وأدوات تطبيقات الويب ASP.NET Core",
+          "en": "Brings ASP.NET Core web defaults and tooling"
+        },
+        {
+          "ar": "يثبّت Visual Studio",
+          "en": "Installs Visual Studio"
+        },
+        {
+          "ar": "لا شيء",
+          "en": "Nothing"
+        }
+      ],
+      "answer": 1,
+      "explanation": {
+        "ar": "الـ SDK يحدد نوع المشروع وافتراضاته.",
+        "en": "The SDK defines project type and defaults."
+      }
+    },
+    {
+      "question": {
+        "ar": "لماذا لا تجد قائمة بملفات ‎.cs داخل ‎.csproj الحديث؟",
+        "en": "Why no list of .cs files in a modern .csproj?"
+      },
+      "options": [
+        {
+          "ar": "نسيها القالب",
+          "en": "The template forgot"
+        },
+        {
+          "ar": "تُضمَّن كل ملفات ‎.cs في المجلد تلقائياً",
+          "en": "All .cs files are included automatically"
+        },
+        {
+          "ar": "موجودة في ملف آخر",
+          "en": "They're in another file"
+        },
+        {
+          "ar": "الملفات لا تُترجم",
+          "en": "Files aren't compiled"
+        }
+      ],
+      "answer": 1,
+      "explanation": {
+        "ar": "SDK-style projects تستخدم Globbing تلقائياً.",
+        "en": "Automatic globbing."
+      }
+    },
+    {
+      "question": {
+        "ar": "أي مجلد يجب ألا يُرفع إلى Git أبداً؟",
+        "en": "Which folder must never be committed?"
+      },
+      "options": [
+        {
+          "ar": "Properties",
+          "en": "Properties"
+        },
+        {
+          "ar": "wwwroot",
+          "en": "wwwroot"
+        },
+        {
+          "ar": "obj",
+          "en": "obj"
+        },
+        {
+          "ar": "Controllers",
+          "en": "Controllers"
+        }
+      ],
+      "answer": 2,
+      "explanation": {
+        "ar": "bin و obj مخرجات بناء تُعاد صناعتها.",
+        "en": "bin/obj are build outputs."
+      }
+    },
+    {
+      "question": {
+        "ar": "متى يُقرأ ملف launchSettings.json؟",
+        "en": "When is launchSettings.json used?"
+      },
+      "options": [
+        {
+          "ar": "دائماً في الإنتاج",
+          "en": "Always in production"
+        },
+        {
+          "ar": "محلياً فقط عند dotnet run أو من المحرر",
+          "en": "Only locally with dotnet run / the IDE"
+        },
+        {
+          "ar": "عند النشر",
+          "en": "On publish"
+        },
+        {
+          "ar": "أبداً",
+          "en": "Never"
+        }
+      ],
+      "answer": 1,
+      "explanation": {
+        "ar": "هو لإعدادات التشغيل المحلية فقط.",
+        "en": "Local launch profiles only."
+      }
+    },
+    {
+      "question": {
+        "ar": "ما الصيغة الافتراضية لملف الحل في ‎.NET 10؟",
+        "en": "Default solution format in .NET 10?"
+      },
+      "options": [
+        {
+          "ar": "‎.sln",
+          "en": ".sln"
+        },
+        {
+          "ar": "‎.slnx",
+          "en": ".slnx"
+        },
+        {
+          "ar": "solution.json",
+          "en": "solution.json"
+        },
+        {
+          "ar": "‎.csproj",
+          "en": ".csproj"
+        }
+      ],
+      "answer": 1,
+      "explanation": {
+        "ar": "‎.slnx صيغة XML جديدة أبسط.",
+        "en": "The new XML .slnx."
+      }
+    }
+  ]
+}

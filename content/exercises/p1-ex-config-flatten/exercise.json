@@ -1,0 +1,16 @@
+{
+  "id": "p1-ex-config-flatten",
+  "title": { "ar": "تسطيح appsettings.json", "en": "Flattening appsettings.json" },
+  "kind": "exercise",
+  "difficulty": "medium",
+  "terms": ["appsettings-json", "configuration", "configuration-key", "json"],
+  "prompt": {
+    "ar": "ASP.NET Core لا يخزّن الإعدادات كشجرة JSON. يحوّلها إلى قاموس مسطّح من نصوص، والمفاتيح تُفصل بنقطتين `:`. ستكتب هذا التحويل بنفسك باستخدام `System.Text.Json` (الكلاس `JsonDocument`):\n\n**`ConfigFlattener.Flatten(json)`**:\n- `{\"Logging\":{\"LogLevel\":{\"Default\":\"Information\"}}}` → المفتاح `Logging:LogLevel:Default` = `\"Information\"`.\n- المصفوفات تأخذ الفهرس كمفتاح: `{\"Origins\":[\"a\",\"b\"]}` → `Origins:0` = `\"a\"` و `Origins:1` = `\"b\"`.\n- الأرقام تُخزّن كنصها في JSON كما هو: `5.50` → `\"5.50\"`. والقيم المنطقية تصبح `\"True\"` و `\"False\"` بحرف كبير، لأن ASP.NET Core الحقيقي يستدعي `JsonElement.ToString()`.\n- `null` في JSON → قيمة `null`.\n- القاموس المُرجع **لا يهتم بحالة أحرف المفاتيح** (`StringComparer.OrdinalIgnoreCase`)، تماماً مثل [[configuration]] في ASP.NET Core.\n\n**`ConfigFlattener.GetSection(data, section)`**: كل المفاتيح التي تبدأ بـ `section:` مع حذف هذه البادئة، بقاموس لا يهتم بحالة الأحرف أيضاً.",
+    "en": "Flatten JSON into a case-insensitive `Dictionary<string, string?>` with `:`-separated keys (arrays use indexes, numbers keep their raw text, booleans become \"True\"/\"False\" like the real provider, JSON null → null), and implement `GetSection` which returns keys under `section:` with the prefix removed."
+  },
+  "hints": [
+    { "ar": "`using var doc = JsonDocument.Parse(json);` ثم دالة تعاودية (Recursive) `Visit(JsonElement element, string prefix, Dictionary<...> result)` تفحص `element.ValueKind`.", "en": "Parse with `JsonDocument` and write a recursive `Visit(element, prefix, result)` that switches on `ValueKind`." },
+    { "ar": "للكائن: `foreach (var p in element.EnumerateObject()) Visit(p.Value, Join(prefix, p.Name), result);`. للمصفوفة: `EnumerateArray()` مع عدّاد i. و Join ترجع الاسم وحده إذا كان prefix فارغاً.", "en": "Use `EnumerateObject()` and `EnumerateArray()`; Join returns the name alone when the prefix is empty." },
+    { "ar": "للقيم: `JsonValueKind.String => element.GetString()`، و `JsonValueKind.Null => null`، والباقي (أرقام و true/false) `element.ToString()`، وهي تعطي \"5.50\" للأرقام و \"True\" للقيم المنطقية.", "en": "Strings → `GetString()`, Null → null, numbers/bools → `element.ToString()`." }
+  ]
+}

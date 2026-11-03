@@ -1,0 +1,416 @@
+{
+  "id": "p0-generics",
+  "title": {
+    "ar": "الأنواع العامة والمجموعات",
+    "en": "Generics & Collections"
+  },
+  "summary": {
+    "ar": "List و Dictionary والأنواع العامة <T> وقيودها: كيف تكتب كوداً واحداً يعمل مع أي نوع دون أن تفقد أمان الأنواع.",
+    "en": "List, Dictionary, generic types and constraints: write code once for any type without losing type safety."
+  },
+  "minutes": 30,
+  "terms": [
+    "generics",
+    "boxing",
+    "generic-constraint",
+    "repository-pattern"
+  ],
+  "exercises": [
+    "p0-ex-repository"
+  ],
+  "sections": [
+    {
+      "type": "text",
+      "ar": "تخيّل أنك تريد صنف «مستودع» يحفظ منتجات، ثم آخر يحفظ عملاء، ثم آخر للطلبات. هل تكتبه ثلاث مرات؟ أو تستخدم `object` وتخسر فحص الأنواع؟\n\n[[generics]] هي الحل: تكتب `Repository<T>` مرة واحدة، و `T` متغير لـ**نوع** يُحدد عند الاستخدام: `Repository<Product>` و `Repository<Customer>`. والمترجم يعرف أن `GetById` في الأولى ترجع `Product` بالضبط.",
+      "en": "Generics let you write `Repository<T>` once and use it as `Repository<Product>` with full type safety."
+    },
+    {
+      "type": "analogy",
+      "ar": "الأنواع العامة مثل قالب الكعك القابل للتعبئة: نفس القالب يصنع كعكة شوكولاتة أو فانيلا، لكن بعد أن تختار النكهة يعرف الجميع ما بداخلها. لن تفتح علبة «كعك فانيلا» وتجد بيتزا. أما `object` فهي صندوق بلا ملصق: يتسع لأي شيء، لكنك لا تعرف ما بداخله حتى تفتحه.",
+      "en": "Generics are a mould you fill with a flavour; object is an unlabelled box."
+    },
+    {
+      "type": "compare",
+      "title": {
+        "ar": "مجموعات بيانات في ثلاث لغات",
+        "en": "Collections in three languages"
+      },
+      "items": [
+        {
+          "lang": "typescript",
+          "label": "TypeScript",
+          "code": "const names: string[] = [\"Sara\", \"Omar\"];\nconst stock = new Map<string, number>();\nstock.set(\"pen\", 10);\n// Types are ERASED at runtime"
+        },
+        {
+          "lang": "php",
+          "label": "PHP",
+          "code": "$names = [\"Sara\", \"Omar\"];          // any type allowed\n$stock = [\"pen\" => 10];             // associative array\n/** @var array<string,int> */      // only a comment!"
+        },
+        {
+          "lang": "csharp",
+          "label": "C#",
+          "code": "var names = new List<string> { \"Sara\", \"Omar\" };\nvar stock = new Dictionary<string, int> { [\"pen\"] = 10 };\n// names.Add(5);  // CS1503: compile error\n// Types EXIST at runtime (reified generics)"
+        }
+      ],
+      "note": {
+        "ar": "في TypeScript تختفي الأنواع بعد الترجمة إلى JavaScript، وفي PHP لا توجد Generics أصلاً. في ‎.NET تبقى `List<int>` نوعاً حقيقياً حتى وقت التشغيل، وهذا أسرع لأنه يتجنب [[boxing]].",
+        "en": "TS erases generics; PHP has none; .NET keeps them at runtime (reified), avoiding boxing."
+      }
+    },
+    {
+      "type": "heading",
+      "ar": "المجموعات التي ستستخدمها يومياً",
+      "en": "Collections you'll use daily"
+    },
+    {
+      "type": "table",
+      "headers": [
+        {
+          "ar": "النوع",
+          "en": "Type"
+        },
+        {
+          "ar": "متى تستخدمه",
+          "en": "When"
+        },
+        {
+          "ar": "يقابل في JS",
+          "en": "JS equivalent"
+        }
+      ],
+      "rows": [
+        [
+          "`List<T>`",
+          "قائمة مرتبة تكبر وتصغر",
+          "`Array`"
+        ],
+        [
+          "`Dictionary<TKey, TValue>`",
+          "بحث سريع بالمفتاح O(1)",
+          "`Map` / object"
+        ],
+        [
+          "`HashSet<T>`",
+          "عناصر فريدة، وفحص وجود سريع",
+          "`Set`"
+        ],
+        [
+          "`T[]` (مصفوفة)",
+          "حجم ثابت، أداء عالٍ",
+          "`Array` بحجم ثابت"
+        ],
+        [
+          "`IEnumerable<T>`",
+          "أي شيء يُمرّ عليه بـ foreach (نوع للمعاملات والإرجاع)",
+          "Iterable"
+        ],
+        [
+          "`IReadOnlyList<T>`",
+          "إرجاع قائمة لا يمكن تعديلها من المستدعي",
+          "`readonly T[]` في TS"
+        ]
+      ]
+    },
+    {
+      "type": "annotated",
+      "lang": "csharp",
+      "title": {
+        "ar": "Dictionary والمفتاح المفقود",
+        "en": "Dictionary and missing keys"
+      },
+      "code": "var prices = new Dictionary<string, decimal>\n{\n    [\"pen\"] = 1.5m,\n    [\"book\"] = 20m,\n};\n\nprices[\"lamp\"] = 35m;\n\ndecimal p1 = prices[\"pen\"];\ndecimal p2 = prices[\"mug\"];\n\nif (prices.TryGetValue(\"mug\", out var mugPrice))\n    Console.WriteLine(mugPrice);\n\nvar p3 = prices.GetValueOrDefault(\"mug\", 0m);",
+      "notes": {
+        "1": {
+          "ar": "قاموس مفاتيحه string وقيمه decimal. النوعان ثابتان: لا يمكن إضافة مفتاح رقمي.",
+          "en": "Keys are string, values decimal, enforced."
+        },
+        "3": {
+          "ar": "صيغة Index initializer لملء القاموس عند الإنشاء.",
+          "en": "Index initializer syntax."
+        },
+        "7": {
+          "ar": "الإسناد بالمفهرس يضيف المفتاح أو يستبدل قيمته إن كان موجوداً.",
+          "en": "Indexer assignment adds or replaces."
+        },
+        "9": {
+          "ar": "القراءة بالمفهرس تعمل لأن المفتاح موجود.",
+          "en": "Works: the key exists."
+        },
+        "10": {
+          "ar": "⚠️ `KeyNotFoundException`! على عكس JavaScript الذي يرجع undefined، المفتاح المفقود هنا يرمي استثناء.",
+          "en": "Throws KeyNotFoundException (JS would return undefined)."
+        },
+        "12": {
+          "ar": "الطريقة الآمنة: ترجع false دون استثناء، والقيمة تخرج في متغير out.",
+          "en": "Safe lookup with an out variable."
+        },
+        "15": {
+          "ar": "أو قيمة افتراضية إذا لم يوجد المفتاح.",
+          "en": "Or a default when missing."
+        }
+      }
+    },
+    {
+      "type": "heading",
+      "ar": "كتابة صنف عام بقيود",
+      "en": "Writing a generic class with constraints"
+    },
+    {
+      "type": "text",
+      "ar": "داخل صنف عام لا يعرف المترجم شيئاً عن `T`، فلا تستطيع كتابة `item.Id`. الحل هو [[generic-constraint]]: `where T : IEntity` تعني «T يجب أن يطبّق IEntity»، فيصبح `item.Id` مسموحاً.",
+      "en": "Constraints (`where T : IEntity`) let you use members of T inside generic code."
+    },
+    {
+      "type": "code",
+      "lang": "csharp",
+      "code": "public interface IEntity { int Id { get; set; } }\n\npublic class InMemoryRepository<T> where T : class, IEntity\n{\n    private readonly Dictionary<int, T> _items = new();\n\n    public T Add(T item) { _items[item.Id] = item; return item; }\n    public T? GetById(int id) => _items.GetValueOrDefault(id);\n}\n\n// Generic METHOD: the type parameter is on the method, and is usually inferred\npublic static T Max<T>(IEnumerable<T> items) where T : IComparable<T>\n    => items.Aggregate((a, b) => a.CompareTo(b) >= 0 ? a : b);\n\nint biggest = Max(new[] { 3, 9, 4 });          // T inferred as int\nstring last = Max(new[] { \"pear\", \"apple\" });  // T inferred as string",
+      "title": {
+        "ar": "مستودع عام (ستكتبه في التمرين)",
+        "en": "A generic repository (you'll build one)"
+      }
+    },
+    {
+      "type": "table",
+      "headers": [
+        {
+          "ar": "القيد",
+          "en": "Constraint"
+        },
+        {
+          "ar": "المعنى",
+          "en": "Meaning"
+        }
+      ],
+      "rows": [
+        [
+          "`where T : class`",
+          "T نوع مرجعي"
+        ],
+        [
+          "`where T : struct`",
+          "T نوع قيمة"
+        ],
+        [
+          "`where T : IEntity`",
+          "T يطبّق الواجهة"
+        ],
+        [
+          "`where T : new()`",
+          "T له باني بدون معاملات، فيمكن كتابة `new T()`"
+        ],
+        [
+          "`where TKey : notnull`",
+          "T لا يقبل null (مطلوب لمفاتيح Dictionary)"
+        ]
+      ]
+    },
+    {
+      "type": "callout",
+      "kind": "info",
+      "ar": "ستلتقي هذا النمط حرفياً في المرحلة 4: `DbSet<Product>` في EF Core و `ILogger<OrderService>` و `IOptions<SandboxOptions>` كلها أنواع عامة. و [[repository-pattern]] الذي تبنيه الآن نسخة مصغرة مما ستكتبه فوق قاعدة بيانات حقيقية.",
+      "en": "You'll meet DbSet<T>, ILogger<T>, IOptions<T> constantly."
+    },
+    {
+      "type": "source",
+      "path": "Backend/LearnBackend.Api/Content/ContentStore.cs",
+      "find": "private T Read<T>(string relativePath)",
+      "context": 6,
+      "note": {
+        "ar": "دالة عامة في هذا التطبيق: تقرأ أي ملف JSON وتحوله إلى النوع T الذي تطلبه، فـ `Read<Curriculum>` و `Read<List<GlossaryTerm>>` نفس الكود.",
+        "en": "A generic method that deserializes any JSON file into T."
+      }
+    },
+    {
+      "type": "source",
+      "path": "Backend/LearnBackend.Api/Content/ContentStore.cs",
+      "find": "public required IReadOnlyDictionary<string, Lesson> Lessons { get; init; }",
+      "context": 3,
+      "note": {
+        "ar": "قاموس للبحث السريع عن الدرس بالمعرّف، مكشوف كـ IReadOnlyDictionary للقراءة فقط.",
+        "en": "A read-only dictionary for fast lesson lookup by id."
+      }
+    },
+    {
+      "type": "mistakes",
+      "items": [
+        {
+          "title": {
+            "ar": "القراءة بالمفهرس دون التحقق من وجود المفتاح",
+            "en": "Indexer lookup without checking"
+          },
+          "wrong": "var price = prices[productId]; // KeyNotFoundException",
+          "right": "if (!prices.TryGetValue(productId, out var price)) return NotFound();",
+          "ar": "القاموس يرمي استثناء للمفتاح المفقود، على عكس JavaScript.",
+          "en": "Missing keys throw."
+        },
+        {
+          "title": {
+            "ar": "إرجاع List<T> قابلة للتعديل من دالة عامة",
+            "en": "Returning a mutable List from a public API"
+          },
+          "wrong": "public List<Order> GetOrders() => _orders;",
+          "right": "public IReadOnlyList<Order> GetOrders() => _orders.ToList();",
+          "ar": "المستدعي قد يعدّل بياناتك الداخلية.",
+          "en": "Callers could mutate your internal state."
+        },
+        {
+          "title": {
+            "ar": "استخدام object بدلاً من Generics",
+            "en": "Using object instead of generics"
+          },
+          "wrong": "public object Find(int id) { ... }\nvar p = (Product)repo.Find(1); // cast, may fail at runtime",
+          "right": "public T? Find(int id) { ... }\nProduct? p = repo.Find(1);",
+          "ar": "تخسر فحص الأنواع وقت الترجمة وتضيف تحويلات قد تفشل وقت التشغيل.",
+          "en": "You lose compile-time safety."
+        }
+      ]
+    }
+  ],
+  "quiz": [
+    {
+      "question": {
+        "ar": "ما ميزة `List<Product>` على `List<object>`؟",
+        "en": "Advantage of List<Product> over List<object>?"
+      },
+      "options": [
+        {
+          "ar": "أسرع في الكتابة فقط",
+          "en": "Only shorter to type"
+        },
+        {
+          "ar": "المترجم يتحقق من الأنواع ولا حاجة للتحويل (Cast)",
+          "en": "Compile-time type checking, no casts"
+        },
+        {
+          "ar": "تستهلك ذاكرة أكثر",
+          "en": "Uses more memory"
+        },
+        {
+          "ar": "لا فرق",
+          "en": "No difference"
+        }
+      ],
+      "answer": 1,
+      "explanation": {
+        "ar": "Generics تحافظ على معلومة النوع فيرفض المترجم إضافة نوع خاطئ.",
+        "en": "The type is known and enforced."
+      }
+    },
+    {
+      "question": {
+        "ar": "ماذا يحدث عند `dict[\"missing\"]` لمفتاح غير موجود؟",
+        "en": "What does `dict[\"missing\"]` do for a missing key?"
+      },
+      "options": [
+        {
+          "ar": "يرجع null",
+          "en": "Returns null"
+        },
+        {
+          "ar": "يرجع القيمة الافتراضية",
+          "en": "Returns default"
+        },
+        {
+          "ar": "يرمي KeyNotFoundException",
+          "en": "Throws KeyNotFoundException"
+        },
+        {
+          "ar": "يضيف المفتاح",
+          "en": "Adds the key"
+        }
+      ],
+      "answer": 2,
+      "explanation": {
+        "ar": "استخدم TryGetValue أو GetValueOrDefault للبحث الآمن.",
+        "en": "Use TryGetValue/GetValueOrDefault."
+      }
+    },
+    {
+      "question": {
+        "ar": "ما وظيفة `where T : IEntity`؟",
+        "en": "What does `where T : IEntity` do?"
+      },
+      "options": [
+        {
+          "ar": "تجعل T من نوع IEntity فقط حرفياً",
+          "en": "T must literally be IEntity"
+        },
+        {
+          "ar": "تسمح باستخدام أعضاء IEntity مثل Id داخل الصنف العام",
+          "en": "Lets you use IEntity members like Id inside the generic code"
+        },
+        {
+          "ar": "تمنع استخدام الصنف مع الأصناف",
+          "en": "Prevents classes"
+        },
+        {
+          "ar": "لا شيء، مجرد توثيق",
+          "en": "Nothing, documentation only"
+        }
+      ],
+      "answer": 1,
+      "explanation": {
+        "ar": "القيد يخبر المترجم بما يضمنه T، فيسمح باستخدام أعضائه.",
+        "en": "Constraints tell the compiler what T supports."
+      }
+    },
+    {
+      "question": {
+        "ar": "أي مجموعة تناسب فحص «هل هذا البريد مسجل مسبقاً؟» بسرعة بين مليون بريد؟",
+        "en": "Best collection to check membership among a million emails?"
+      },
+      "options": [
+        {
+          "ar": "List<string>",
+          "en": "List<string>"
+        },
+        {
+          "ar": "HashSet<string>",
+          "en": "HashSet<string>"
+        },
+        {
+          "ar": "string[]",
+          "en": "string[]"
+        },
+        {
+          "ar": "Queue<string>",
+          "en": "Queue<string>"
+        }
+      ],
+      "answer": 1,
+      "explanation": {
+        "ar": "HashSet بحث O(1)، و List تبحث عنصراً عنصراً O(n).",
+        "en": "HashSet lookups are O(1)."
+      }
+    },
+    {
+      "question": {
+        "ar": "ما الفرق بين Generics في TypeScript و ‎.NET؟",
+        "en": "TypeScript vs .NET generics?"
+      },
+      "options": [
+        {
+          "ar": "لا فرق",
+          "en": "None"
+        },
+        {
+          "ar": "في ‎.NET تبقى معلومات النوع وقت التشغيل",
+          "en": ".NET keeps type information at runtime"
+        },
+        {
+          "ar": "TypeScript لا يدعمها",
+          "en": "TS doesn't support them"
+        },
+        {
+          "ar": "‎.NET يحذفها بعد الترجمة",
+          "en": ".NET erases them"
+        }
+      ],
+      "answer": 1,
+      "explanation": {
+        "ar": "‎.NET يستخدم Reified generics، و TypeScript يمحو الأنواع عند التحويل لـ JavaScript.",
+        "en": "Reified vs erased."
+      }
+    }
+  ]
+}

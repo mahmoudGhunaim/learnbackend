@@ -1,0 +1,16 @@
+{
+  "id": "p0-ex-money",
+  "title": { "ar": "المال كـ Record", "en": "Money as a Record" },
+  "kind": "exercise",
+  "difficulty": "medium",
+  "terms": ["record", "value-equality", "with-expression", "immutability", "pattern-matching", "operator-overloading"],
+  "prompt": {
+    "ar": "المبلغ المالي **قيمة** وليس كياناً: 10 دولار تساوي 10 دولار أخرى دائماً. هذا هو المكان المثالي لـ [[record]].\n\n- `Money(decimal Amount, string Currency)`: record غير قابل للتعديل. العملة يجب أن تكون 3 أحرف إنجليزية كبيرة (مثل `\"USD\"`) وإلا `ArgumentException`.\n- العامل `+` بين مبلغين: يرمي `InvalidOperationException` إذا اختلفت العملتان.\n- `Multiply(decimal factor)`: يرجع **نسخة جديدة** مقرّبة لخانتين (استخدم `with`).\n- `ToString()`: يرجع `\"12.50 USD\"`.\n- `LineItem(string Product, Money UnitPrice, int Quantity)` مع خاصية محسوبة `Total`.\n- `Checkout.Sum(items, currency)`: مجموع الأسطر، وللقائمة الفارغة `Money(0, currency)`.\n- `Checkout.Shipping(Money subtotal)`: باستخدام switch expression و relational patterns: أقل من 50 → 5، من 50 إلى أقل من 100 → 2.5، و 100 فأكثر → 0. بنفس عملة المبلغ.",
+    "en": "Implement an immutable `Money` record (3 uppercase letters currency, else `ArgumentException`), `operator +` (mismatched currency → `InvalidOperationException`), `Multiply` returning a new rounded copy via `with`, `ToString()` → \"12.50 USD\", `LineItem` with a computed `Total`, `Checkout.Sum` and `Checkout.Shipping` (switch expression: <50 → 5, <100 → 2.5, else 0)."
+  },
+  "hints": [
+    { "ar": "للتحقق داخل record موضعي (Positional): `public string Currency { get; } = IsValid(Currency) ? Currency : throw new ArgumentException(...);` أو اكتب Constructor عادياً بخاصيتين `{ get; init; }`.", "en": "Validate with a property initializer: `public string Currency { get; } = IsValid(Currency) ? Currency : throw ...;`" },
+    { "ar": "العامل: `public static Money operator +(Money a, Money b)`. والتحقق من 3 أحرف كبيرة: `currency.Length == 3 && currency.All(char.IsAsciiLetterUpper)`.", "en": "`public static Money operator +(Money a, Money b)` and `currency.All(char.IsAsciiLetterUpper)`." },
+    { "ar": "النسخة: `this with { Amount = Math.Round(Amount * factor, 2) }`. والشحن: `subtotal.Amount switch { < 50 => 5m, < 100 => 2.5m, _ => 0m }`. والمجموع: `items.Aggregate(new Money(0, currency), (sum, i) => sum + i.Total)`.", "en": "`this with { Amount = ... }`, `subtotal.Amount switch { < 50 => 5m, < 100 => 2.5m, _ => 0m }`, and `Aggregate` for Sum." }
+  ]
+}

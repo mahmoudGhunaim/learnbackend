@@ -1,0 +1,16 @@
+{
+  "id": "p1-ex-disposable",
+  "title": { "ar": "تحرير الموارد: IDisposable و using", "en": "Releasing Resources: IDisposable & using" },
+  "kind": "exercise",
+  "difficulty": "medium",
+  "terms": ["garbage-collector", "idisposable", "using-statement", "clr"],
+  "prompt": {
+    "ar": "[[garbage-collector]] يحرر **الذاكرة** تلقائياً، لكنه لا يعرف متى تنتهي من اتصال قاعدة بيانات أو ملف مفتوح، وقد لا يعمل لدقائق! لهذا توجد الواجهة [[idisposable]].\n\nأكمل `DatabaseConnection`:\n- الـ Constructor يسجّل `\"open {name}\"` في الـ log.\n- `Query(sql)`: يرجع `\"{name}: {sql}\"`. إذا كان sql فارغاً ارمِ `ArgumentException`. إذا كان الاتصال مغلقاً ارمِ `ObjectDisposedException`.\n- `Dispose()`: يسجّل `\"close {name}\"` **مرة واحدة فقط** حتى لو استُدعي عدة مرات، ويجعل `IsDisposed = true`.\n\nوأكمل `ConnectionWork`:\n- `RunQueries(name, log, queries)`: يفتح اتصالاً، ينفّذ كل الاستعلامات ويرجع نتائجها، ويضمن إغلاق الاتصال **حتى لو حدث استثناء** (استخدم `using`).\n- `OpenTwo(log)`: يفتح اتصالين \"A\" ثم \"B\" بـ using declarations ويستدعي Query(\"SELECT 1\") على كل منهما. لاحظ ترتيب الإغلاق في الـ log!",
+    "en": "The GC frees memory, not connections or files. Implement `DatabaseConnection : IDisposable` (log \"open {name}\", `Query` throws ObjectDisposedException after disposal and ArgumentException for blank SQL, `Dispose` logs \"close {name}\" only once) and `ConnectionWork.RunQueries` (always disposes, even on exceptions) and `OpenTwo` (two using declarations; observe the reverse disposal order)."
+  },
+  "hints": [
+    { "ar": "`public sealed class DatabaseConnection : IDisposable` ثم `public void Dispose() { if (IsDisposed) return; IsDisposed = true; log.Write(...); }`.", "en": "Make Dispose idempotent with an early `if (IsDisposed) return;`." },
+    { "ar": "في Query: `ObjectDisposedException.ThrowIf(IsDisposed, this);` ثم تحقق من sql بـ `string.IsNullOrWhiteSpace`.", "en": "`ObjectDisposedException.ThrowIf(IsDisposed, this);`" },
+    { "ar": "`using var connection = new DatabaseConnection(name, log);` تُغلق تلقائياً عند الخروج من الدالة بأي طريقة، حتى عند رمي استثناء. وعند وجود متغيرين using تُغلق بالترتيب العكسي: B ثم A.", "en": "`using var c = ...;` disposes when the method exits, even via an exception; multiple usings dispose in reverse order." }
+  ]
+}

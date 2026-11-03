@@ -1,0 +1,16 @@
+{
+  "id": "p1-ex-cli-parser",
+  "title": { "ar": "محلل أوامر dotnet", "en": "dotnet Command Parser" },
+  "kind": "exercise",
+  "difficulty": "medium",
+  "terms": ["dotnet-cli", "command-line-arguments", "dictionary", "switch-expression"],
+  "prompt": {
+    "ar": "عندما تكتب `dotnet new webapi -n Shop --framework net10.0` يستقبل البرنامج مصفوفة نصوص `string[] args` مقسمة عند المسافات. اكتب محللاً بسيطاً بنفس منطق [[dotnet-cli]]:\n\n**`DotnetCli.Parse(args)`** يرجع `CliCommand`:\n- العنصر الأول هو الأمر (Verb) بأحرف صغيرة. مصفوفة فارغة → `ArgumentException`.\n- `--name value` أو `--name=value` → خيار (Option). المفاتيح تُخزن بدون الشرطات وبأحرف صغيرة.\n- الاختصارات `-n` و `-o` و `-f` و `-c` و `-v` تعني `name` و `output` و `framework` و `configuration` و `verbosity`.\n- خيار لا يتبعه قيمة (نهاية المصفوفة أو يتبعه نص يبدأ بـ `-`) هو علَم (Flag) قيمته `null`، مثل `--no-restore`.\n- أي نص آخر هو معامل (Argument)، مثل `webapi` في المثال.\n\n**`DotnetCli.RequiresProject(command)`**: يرجع true للأوامر التي تعمل على مشروع موجود: `build` و `run` و `test` و `publish` و `restore` و `watch` و `clean` و `pack` و `add`. و false لغيرها مثل `new` و `--info`.",
+    "en": "Parse `string[] args` like the dotnet CLI: first item = verb (lowercase; empty → ArgumentException), `--key value` / `--key=value` options (lowercase keys without dashes), short aliases -n/-o/-f/-c/-v → name/output/framework/configuration/verbosity, flags with null values, and the rest as arguments. `RequiresProject` returns true for build/run/test/publish/restore/watch/clean/pack/add."
+  },
+  "hints": [
+    { "ar": "استخدم حلقة `for` بفهرس i (وليس foreach) لأنك أحياناً تحتاج قراءة العنصر التالي `args[i + 1]` ثم تخطيه بـ `i++`.", "en": "Use an index-based `for` loop so you can read `args[i + 1]` and skip it with `i++`." },
+    { "ar": "الاختصارات في قاموس: `new Dictionary<string, string> { [\"n\"] = \"name\", ... }`. ولـ `--key=value` استخدم `Split('=', 2)`.", "en": "Keep aliases in a dictionary and use `Split('=', 2)` for `--key=value`." },
+    { "ar": "RequiresProject مثالية لـ switch expression مع `or`: `command.Verb is \"build\" or \"run\" or ...`.", "en": "Use a pattern: `command.Verb is \"build\" or \"run\" or ...`." }
+  ]
+}

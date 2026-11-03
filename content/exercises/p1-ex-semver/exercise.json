@@ -1,0 +1,16 @@
+{
+  "id": "p1-ex-semver",
+  "title": { "ar": "إصدارات NuGet ونطاقاتها", "en": "NuGet Versions & Ranges" },
+  "kind": "exercise",
+  "difficulty": "hard",
+  "terms": ["semver", "nuget", "package-reference", "version-range", "icomparable"],
+  "prompt": {
+    "ar": "حزم [[nuget]] تستخدم [[semver]]: `Major.Minor.Patch[-Prerelease]`. ستبني جزءاً من محرّك حل الاعتماديات.\n\n**`SemVersion.Parse(text)`**: يقبل 1 إلى 3 أجزاء رقمية (الناقص = 0، مثلاً `\"2.1\"` = 2.1.0)، ثم اختيارياً `-prerelease`، ثم اختيارياً `+build` الذي **يُتجاهل**. أي نص غير صالح → `FormatException`.\n\n**`CompareTo`** (طبّق `IComparable<SemVersion>`):\n- قارن Major ثم Minor ثم Patch **كأرقام** (1.10.0 > 1.9.0!).\n- نسخة الـ prerelease أقل من النسخة الرسمية: `1.0.0-beta < 1.0.0`.\n- بين نسختين prerelease: قسّم على `.` وقارن جزءاً جزءاً: الأجزاء الرقمية تُقارن كأرقام، والنصية أبجدياً (Ordinal)، والرقمية أقل من النصية، وإذا تساوت البداية فالأقصر أقل. مثال: `alpha < alpha.1 < alpha.beta < beta < beta.2 < beta.11 < rc.1`.\n- `ToString()` يرجع الشكل الكامل مثل `\"1.2.0-rc.1\"` (بدون build).\n\n**`VersionRange.Satisfies(range, version)`** بصيغة NuGet:\n- `\"1.0\"` تعني ≥ 1.0 (الحد الأدنى فقط).\n- `\"[1.0]\"` تعني 1.0 بالضبط.\n- `\"[1.0,2.0)\"`: الأقواس المربعة تشمل الحد، والهلالية تستثنيه. أحد الحدين قد يكون فارغاً: `\"(,2.0]\"` أو `\"(1.0,)\"`.\n\n**`VersionRange.Resolve(range, available)`**: يرجع **أقل** إصدار متاح يحقق النطاق، أو null. هذه قاعدة NuGet الحقيقية: \"Lowest applicable version\".",
+    "en": "Implement `SemVersion.Parse` (1–3 numeric parts, optional -prerelease, ignored +build), `CompareTo` following SemVer precedence (numeric comparison, prerelease < release, identifier-by-identifier prerelease comparison), `ToString`, NuGet range syntax in `VersionRange.Satisfies` (\"1.0\", \"[1.0]\", \"[1.0,2.0)\", \"(,2.0]\", \"(1.0,)\") and `Resolve`, which picks the LOWEST matching version like NuGet does."
+  },
+  "hints": [
+    { "ar": "التحليل: احذف ما بعد `+` أولاً، ثم افصل عند أول `-` بـ `Split('-', 2)`، ثم الجزء الرقمي بـ `Split('.')` واستخدم `int.TryParse` لكل جزء.", "en": "Strip `+build`, split on the first `-`, then parse each numeric part with `int.TryParse`." },
+    { "ar": "المقارنة: `Major.CompareTo(other.Major)` ثم إذا كانت 0 انتقل للتالي. للـ prerelease: null (نسخة رسمية) أكبر من أي prerelease. ثم قارن الأجزاء بحلقة حتى `Math.Min(a.Length, b.Length)` وفي النهاية `a.Length.CompareTo(b.Length)`.", "en": "Compare field by field; a null prerelease ranks higher; compare identifiers in a loop, then by length." },
+    { "ar": "النطاق: إذا لم يبدأ بـ `[` أو `(` فهو حد أدنى شامل. إذا لم يحتوِ `,` فهو `[x]` إصدار محدد. وإلا: `var parts = inner.Split(',');` والحد الفارغ يعني بلا حد. والـ Resolve: `available.Select(SemVersion.Parse).Where(...).Order().FirstOrDefault()` (`Order()` تعمل لأن النوع يطبّق IComparable).", "en": "No bracket = inclusive minimum; no comma = exact version; empty bound = unbounded. Resolve with `Where(...).Order().FirstOrDefault()`." }
+  ]
+}

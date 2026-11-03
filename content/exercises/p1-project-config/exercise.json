@@ -1,0 +1,16 @@
+{
+  "id": "p1-project-config",
+  "title": { "ar": "مشروع المرحلة 1: نظام إعدادات مصغّر", "en": "Phase 1 Project: Mini Configuration System" },
+  "kind": "project",
+  "difficulty": "hard",
+  "terms": ["configuration", "configuration-provider", "environment-variables", "command-line-arguments", "appsettings-json", "environment"],
+  "prompt": {
+    "ar": "ستبني نسخة مصغّرة من نظام [[configuration]] الحقيقي في ASP.NET Core، الذي يقرأ الإعدادات من عدة **مصادر (Providers)** بترتيب محدد، **والمصدر الأخير يفوز**:\n\n`appsettings.json` ← `appsettings.{Environment}.json` ← متغيرات البيئة ← معاملات سطر الأوامر\n\nالدالة `Flatten` من التمرين السابق جاهزة لك.\n\n**`ConfigurationBuilderLite`** (كل دالة ترجع `this` لتسمح بالتسلسل `.AddJson(...).AddCommandLine(...)`):\n- `AddJson(json)`: طبقة من نص JSON.\n- `AddEnvironmentVariables(env, prefix = null)`: كل متغير يتحول فيه `__` (شرطتان سفليتان) إلى `:` مثل `Logging__LogLevel__Default`. إذا أُعطي prefix (مثل `\"SHOP_\"`) تؤخذ فقط المتغيرات التي تبدأ به (بدون اعتبار لحالة الأحرف) وتُحذف البادئة من المفتاح.\n- `AddCommandLine(args)`: يدعم `--Key=Value` و `--Key Value` و `/Key=Value` و `Key=Value`.\n- `Build()`: يدمج الطبقات بالترتيب، والطبقة اللاحقة تستبدل قيم السابقة.\n\n**`ConfigurationLite`**:\n- المفهرس `config[\"A:B\"]`: القيمة أو null، بدون اعتبار لحالة الأحرف.\n- `GetSection(\"A\")`: إعدادات فرعية مفاتيحها بدون البادئة `A:`.\n- `GetChildKeys()`: أسماء الأبناء المباشرين بدون تكرار. الأرقام أولاً مرتبة رقمياً (2 قبل 10)، ثم الأسماء أبجدياً بدون اعتبار لحالة الأحرف.\n- `GetInt(key, defaultValue)` و `GetBool(key, defaultValue)`: يرجعان القيمة الافتراضية إذا كان المفتاح مفقوداً أو غير قابل للتحويل.\n- `GetConnectionString(name)`: اختصار لـ `ConnectionStrings:{name}`.",
+    "en": "Build a mini version of ASP.NET Core configuration: layered providers where the LAST one wins (JSON → environment JSON → env vars with `__` → `:` and optional prefix → command line `--Key=Value`, `--Key Value`, `/Key=Value`, `Key=Value`). `ConfigurationLite` offers a case-insensitive indexer, `GetSection`, `GetChildKeys` (numbers first numerically, then names), `GetInt`/`GetBool` with defaults and `GetConnectionString`."
+  },
+  "hints": [
+    { "ar": "خزّن الطبقات في `List<Dictionary<string, string?>>`. وفي Build أنشئ قاموساً واحداً بـ `StringComparer.OrdinalIgnoreCase` ومرّ على الطبقات بالترتيب: `merged[key] = value`، فالأخير يكتب فوق الأول.", "en": "Keep a list of layers and merge them in order into one case-insensitive dictionary." },
+    { "ar": "سطر الأوامر: حلقة بفهرس. احذف `--` أو `/` من البداية بـ `TrimStart('-', '/')`. إذا احتوى `=` افصل بـ `Split('=', 2)`. وإلا فإن كان المعامل بدأ بـ `--` أو `/` خذ العنصر التالي كقيمة.", "en": "Index-based loop; strip `--` or `/`; split on the first `=`, otherwise take the next item as the value." },
+    { "ar": "GetSection: صفِّ المفاتيح التي تبدأ بـ `key + \":\"`. و GetChildKeys: `_data.Keys.Select(k => k.Split(':')[0]).Distinct(StringComparer.OrdinalIgnoreCase)` ثم رتّب بـ `OrderBy(k => int.TryParse(k, out _) ? 0 : 1).ThenBy(k => int.TryParse(k, out var n) ? n : 0).ThenBy(k => k, StringComparer.OrdinalIgnoreCase)`.", "en": "GetSection filters on `key + \":\"`; GetChildKeys takes the first segment, distinct, numbers first then names." }
+  ]
+}

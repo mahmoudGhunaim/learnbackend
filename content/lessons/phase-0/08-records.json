@@ -1,0 +1,427 @@
+{
+  "id": "p0-records",
+  "title": {
+    "ar": "السجلات (Records) ومطابقة الأنماط",
+    "en": "Records & Pattern Matching"
+  },
+  "summary": {
+    "ar": "record للبيانات غير القابلة للتعديل مع المساواة بالقيمة و with، ومطابقة الأنماط و switch expressions، ومتى تستخدم record بدل class.",
+    "en": "Immutable records with value equality and `with`, pattern matching and switch expressions, and when to pick record over class."
+  },
+  "minutes": 30,
+  "terms": [
+    "record",
+    "value-equality",
+    "with-expression",
+    "dto",
+    "pattern-matching",
+    "switch-expression"
+  ],
+  "exercises": [
+    "p0-ex-money"
+  ],
+  "sections": [
+    {
+      "type": "text",
+      "ar": "كثير من الأنواع في الـ Backend هي **بيانات فقط**: ما يصل من الطلب، وما تُرجعه للواجهة، وقيم مثل المال والعناوين. لهذه الحالة صُمم [[record]]:\n\n`public record ProductDto(int Id, string Name, decimal Price);`\n\nهذا السطر الواحد يولّد: خصائص للقراءة فقط، وباني (Constructor)، و [[value-equality]]، و `ToString()` مقروءة، ودعم [[with-expression]]، و Deconstruction.",
+      "en": "One line gives you properties, constructor, value equality, ToString, `with` and deconstruction."
+    },
+    {
+      "type": "analogy",
+      "ar": "ورقتان نقديتان من فئة 10 دنانير «متساويتان» حتى لو كانتا ورقتين مختلفتين: يهمك **القيمة** لا الهوية. هذا record. أما زبونان اسمهما «أحمد» فليسا نفس الشخص: لكل منهما هوية خاصة. هذا class (كيان Entity). وعندما «تعدّل» ورقة نقدية لا تكتب عليها بالقلم، بل تأخذ ورقة جديدة بقيمة أخرى. هذا هو `with`.",
+      "en": "Two 10-dinar notes are equal by value (record); two customers named Ahmad are different people (class/entity)."
+    },
+    {
+      "type": "compare",
+      "title": {
+        "ar": "بيانات غير قابلة للتعديل في ثلاث لغات",
+        "en": "Immutable data in three languages"
+      },
+      "items": [
+        {
+          "lang": "javascript",
+          "label": "JavaScript",
+          "code": "const price = Object.freeze({ amount: 10, currency: \"USD\" });\nconst cheaper = { ...price, amount: 8 };\nconsole.log(price === { amount: 10, currency: \"USD\" }); // false (reference)"
+        },
+        {
+          "lang": "php",
+          "label": "PHP 8.2",
+          "code": "readonly class Money {\n    public function __construct(public float $amount, public string $currency) {}\n    public function withAmount(float $a): static { return new static($a, $this->currency); }\n}\n// == compares values, === compares identity"
+        },
+        {
+          "lang": "csharp",
+          "label": "C#",
+          "code": "public record Money(decimal Amount, string Currency);\n\nvar price = new Money(10, \"USD\");\nvar cheaper = price with { Amount = 8 };\nConsole.WriteLine(price == new Money(10, \"USD\")); // True (value equality)"
+        }
+      ]
+    },
+    {
+      "type": "annotated",
+      "lang": "csharp",
+      "title": {
+        "ar": "record عملياً",
+        "en": "Records in practice"
+      },
+      "code": "var a = new Money(10m, \"USD\");\nvar b = new Money(10m, \"USD\");\n\nConsole.WriteLine(a == b);\nConsole.WriteLine(ReferenceEquals(a, b));\nConsole.WriteLine(a);\n\nvar c = a with { Amount = 25m };\nConsole.WriteLine(a.Amount);\n\nvar (amount, currency) = c;\nConsole.WriteLine($\"{amount} {currency}\");\n\npublic record Money(decimal Amount, string Currency)\n{\n    public Money Add(Money other) => this with { Amount = Amount + other.Amount };\n}",
+      "notes": {
+        "1": {
+          "ar": "`new` كأي صنف عادي، فـ record نوع مرجعي (record class) افتراضياً.",
+          "en": "Records are reference types by default."
+        },
+        "4": {
+          "ar": "True: المساواة تقارن قيم الخصائص.",
+          "en": "True: value equality."
+        },
+        "5": {
+          "ar": "False: هما كائنان مختلفان في الذاكرة، لكنهما متساويان في القيمة.",
+          "en": "False: different objects."
+        },
+        "6": {
+          "ar": "ToString جاهزة: `Money { Amount = 10, Currency = USD }`، ومفيدة جداً في الـ Logs.",
+          "en": "Readable ToString, great for logs."
+        },
+        "8": {
+          "ar": "with: نسخة جديدة مع تغيير Amount فقط.",
+          "en": "with: copy with one change."
+        },
+        "9": {
+          "ar": "ما زال 10: الأصل لم يتغير.",
+          "en": "Still 10: original unchanged."
+        },
+        "11": {
+          "ar": "Deconstruction: تفكيك الـ record إلى متغيرات، مثل Destructuring في JavaScript.",
+          "en": "Deconstruction like JS destructuring."
+        },
+        "14": {
+          "ar": "Positional record: المعاملات تصبح خصائص `{ get; init; }`. ويمكن إضافة دوال كأي صنف.",
+          "en": "Positional parameters become init-only properties."
+        },
+        "16": {
+          "ar": "الدوال «المعدِّلة» في record ترجع نسخة جديدة دائماً.",
+          "en": "\"Modifying\" methods return new instances."
+        }
+      }
+    },
+    {
+      "type": "heading",
+      "ar": "record أم class؟",
+      "en": "record or class?"
+    },
+    {
+      "type": "table",
+      "headers": [
+        {
+          "ar": "استخدم",
+          "en": "Use"
+        },
+        {
+          "ar": "عندما",
+          "en": "When"
+        },
+        {
+          "ar": "أمثلة",
+          "en": "Examples"
+        }
+      ],
+      "rows": [
+        [
+          "`record`",
+          "البيانات تُعرّف بقيمتها، وغير قابلة للتعديل",
+          "[[dto]] للـ API، و Money، و Address، والأحداث (Events)، ونتائج الاستعلامات"
+        ],
+        [
+          "`class`",
+          "للكائن هوية وحالة تتغير مع الوقت",
+          "كيانات EF Core (Product و Order)، والخدمات (Services)"
+        ],
+        [
+          "`record struct`",
+          "قيمة صغيرة جداً وأداء حرج",
+          "إحداثيات Point، ومفاتيح مركّبة"
+        ]
+      ]
+    },
+    {
+      "type": "callout",
+      "kind": "warning",
+      "ar": "**لا تستخدم record لكيانات EF Core.** EF Core يتتبع الكيانات بهويتها ويعدّل خصائصها مباشرة، والمساواة بالقيمة تربك هذا التتبع. القاعدة: record للـ DTOs، و class للـ Entities. ستراها مطبّقة في المرحلة 4.",
+      "en": "Don't use records for EF Core entities: EF tracks identity and mutates properties."
+    },
+    {
+      "type": "heading",
+      "ar": "مطابقة الأنماط و switch expressions",
+      "en": "Pattern matching and switch expressions"
+    },
+    {
+      "type": "text",
+      "ar": "[[pattern-matching]] يسمح لك بفحص **شكل** القيمة بصيغة مختصرة جداً، وهو من أقوى ميزات C# الحديثة. و [[switch-expression]] هو switch يرجع قيمة، بدون `case` ولا `break`.",
+      "en": "Pattern matching tests the shape of a value; switch expressions return a value."
+    },
+    {
+      "type": "code",
+      "lang": "csharp",
+      "code": "object[] things = { 42, \"hello\", new Money(5m, \"USD\"), new Money(500m, \"EUR\"), null! };\n\nforeach (var thing in things)\n    Console.WriteLine(Describe(thing));\n\nstatic string Describe(object? value) => value switch\n{\n    null => \"nothing\",\n    int n when n > 40 => $\"a big number: {n}\",\n    int n => $\"a number: {n}\",\n    string { Length: 0 } => \"an empty string\",\n    string s => $\"text of length {s.Length}\",\n    Money { Amount: >= 100 } m => $\"a lot of money: {m}\",\n    Money m => $\"some money: {m.Amount} {m.Currency}\",\n    _ => \"something else\",\n};\n\nstatic decimal Shipping(decimal total) => total switch\n{\n    < 50 => 5m,\n    < 100 => 2.5m,\n    _ => 0m,\n};\n\nConsole.WriteLine(Shipping(75));\n\nrecord Money(decimal Amount, string Currency);",
+      "title": {
+        "ar": "جرّب أنواع الأنماط المختلفة",
+        "en": "Try different pattern kinds"
+      },
+      "runnable": true
+    },
+    {
+      "type": "table",
+      "headers": [
+        {
+          "ar": "النمط",
+          "en": "Pattern"
+        },
+        {
+          "ar": "مثال",
+          "en": "Example"
+        }
+      ],
+      "rows": [
+        [
+          "نوع (Type)",
+          "`x is string s`"
+        ],
+        [
+          "ثابت (Constant)",
+          "`status is OrderStatus.Paid`"
+        ],
+        [
+          "مقارنة (Relational)",
+          "`age is >= 18 and < 65`"
+        ],
+        [
+          "خصائص (Property)",
+          "`order is { Status: \"Paid\", Total: > 100 }`"
+        ],
+        [
+          "منطقي (Logical)",
+          "`c is >= 'a' and <= 'z' or '_'`"
+        ],
+        [
+          "نفي",
+          "`user is not null`"
+        ],
+        [
+          "قوائم (List, C# 11)",
+          "`args is [\"build\", ..]`"
+        ]
+      ]
+    },
+    {
+      "type": "source",
+      "path": "Backend/LearnBackend.Api/Content/ContentModels.cs",
+      "find": "public sealed record LocalizedText(string Ar, string? En = null);",
+      "context": 2,
+      "note": {
+        "ar": "كل نص عربي/إنجليزي في هذا التطبيق هو record صغير بمعامل اختياري.",
+        "en": "Every bilingual text in this app is a tiny record."
+      }
+    },
+    {
+      "type": "source",
+      "path": "Backend/LearnBackend.Api/Content/ContentStore.cs",
+      "find": "lessons[lesson.Id] = lesson with { Phase = phase.Id, Order = i + 1 };",
+      "context": 4,
+      "note": {
+        "ar": "with حقيقي: نأخذ الدرس كما قُرئ من JSON وننشئ نسخة فيها رقم المرحلة والترتيب.",
+        "en": "A real `with`: copying the lesson with its phase and order filled in."
+      }
+    },
+    {
+      "type": "source",
+      "path": "Backend/LearnBackend.Api/CodeRunner/CodeExecutionService.cs",
+      "find": "var finalOutcome = run switch",
+      "context": 8,
+      "note": {
+        "ar": "switch expression مع Property patterns لتحديد نتيجة تشغيل كودك: مهلة؟ ذاكرة؟ نجاح؟",
+        "en": "A switch expression with property patterns deciding your run's outcome."
+      }
+    },
+    {
+      "type": "mistakes",
+      "items": [
+        {
+          "title": {
+            "ar": "record لكيان قاعدة بيانات",
+            "en": "A record for a database entity"
+          },
+          "wrong": "public record Product(int Id, string Name); // EF Core entity",
+          "right": "public class Product { public int Id { get; set; } public string Name { get; set; } = \"\"; }",
+          "ar": "الكيانات لها هوية وتتغير، و EF Core يحتاج تعديل خصائصها.",
+          "en": "Entities have identity and change."
+        },
+        {
+          "title": {
+            "ar": "توقع أن record غير قابل للتعديل «بعمق»",
+            "en": "Assuming deep immutability"
+          },
+          "wrong": "public record Cart(List<string> Items);\ncart.Items.Add(\"x\"); // works! the list itself is mutable",
+          "right": "public record Cart(IReadOnlyList<string> Items);",
+          "ar": "record يمنع استبدال الخاصية، لكن الكائن داخلها قد يبقى قابلاً للتعديل.",
+          "en": "Only the reference is immutable."
+        },
+        {
+          "title": {
+            "ar": "نسيان الحالة الافتراضية في switch expression",
+            "en": "Missing the default arm"
+          },
+          "wrong": "var label = status switch { 1 => \"New\", 2 => \"Paid\" }; // warning CS8509",
+          "right": "var label = status switch { 1 => \"New\", 2 => \"Paid\", _ => \"Unknown\" };",
+          "ar": "بدون `_` يرمي التعبير SwitchExpressionException للقيم غير المغطاة.",
+          "en": "Without `_`, unmatched values throw."
+        }
+      ]
+    }
+  ],
+  "quiz": [
+    {
+      "question": {
+        "ar": "ماذا يطبع `new Point(1,2) == new Point(1,2)` إذا كان Point من نوع record؟",
+        "en": "What does `new Point(1,2) == new Point(1,2)` print for a record?"
+      },
+      "options": [
+        {
+          "ar": "True",
+          "en": "True"
+        },
+        {
+          "ar": "False",
+          "en": "False"
+        },
+        {
+          "ar": "خطأ ترجمة",
+          "en": "Compile error"
+        },
+        {
+          "ar": "يعتمد على الذاكرة",
+          "en": "Depends on memory"
+        }
+      ],
+      "answer": 0,
+      "explanation": {
+        "ar": "records تستخدم المساواة بالقيمة.",
+        "en": "Value equality."
+      }
+    },
+    {
+      "question": {
+        "ar": "ماذا يفعل `var b = a with { X = 5 };`؟",
+        "en": "What does `var b = a with { X = 5 };` do?"
+      },
+      "options": [
+        {
+          "ar": "يعدّل a",
+          "en": "Modifies a"
+        },
+        {
+          "ar": "ينشئ نسخة جديدة فيها X = 5 ويبقى a كما هو",
+          "en": "Creates a copy with X = 5; a is unchanged"
+        },
+        {
+          "ar": "يحذف X",
+          "en": "Removes X"
+        },
+        {
+          "ar": "يقارن a بـ 5",
+          "en": "Compares a with 5"
+        }
+      ],
+      "answer": 1,
+      "explanation": {
+        "ar": "with تنسخ وتعدّل النسخة فقط.",
+        "en": "Non-destructive mutation."
+      }
+    },
+    {
+      "question": {
+        "ar": "أيهما يناسب كيان Product في EF Core؟",
+        "en": "Which fits an EF Core Product entity?"
+      },
+      "options": [
+        {
+          "ar": "record",
+          "en": "record"
+        },
+        {
+          "ar": "class",
+          "en": "class"
+        },
+        {
+          "ar": "record struct",
+          "en": "record struct"
+        },
+        {
+          "ar": "enum",
+          "en": "enum"
+        }
+      ],
+      "answer": 1,
+      "explanation": {
+        "ar": "الكيانات لها هوية وتتغير، و EF Core يتتبعها، لذلك class.",
+        "en": "Entities are classes."
+      }
+    },
+    {
+      "question": {
+        "ar": "ما ناتج `Shipping(100)`؟",
+        "en": "What does `Shipping(100)` return?"
+      },
+      "options": [
+        {
+          "ar": "5",
+          "en": "5"
+        },
+        {
+          "ar": "2.5",
+          "en": "2.5"
+        },
+        {
+          "ar": "0",
+          "en": "0"
+        },
+        {
+          "ar": "استثناء",
+          "en": "Exception"
+        }
+      ],
+      "answer": 2,
+      "explanation": {
+        "ar": "100 ليست < 50 ولا < 100، فتطابق الحالة الافتراضية _.",
+        "en": "100 falls through to `_`."
+      },
+      "code": "decimal Shipping(decimal t) => t switch { < 50 => 5m, < 100 => 2.5m, _ => 0m };"
+    },
+    {
+      "question": {
+        "ar": "ما الذي يعنيه النمط `order is { Status: \"Paid\", Total: > 100 }`؟",
+        "en": "What does `order is { Status: \"Paid\", Total: > 100 }` test?"
+      },
+      "options": [
+        {
+          "ar": "أن order من نوع Paid",
+          "en": "order's type is Paid"
+        },
+        {
+          "ar": "أن الحالة Paid والمجموع أكبر من 100 (وأن order ليس null)",
+          "en": "Status is Paid, Total > 100 (and not null)"
+        },
+        {
+          "ar": "تعيين القيم",
+          "en": "Assigns values"
+        },
+        {
+          "ar": "خطأ صياغة",
+          "en": "Syntax error"
+        }
+      ],
+      "answer": 1,
+      "explanation": {
+        "ar": "Property pattern يفحص الخصائص، ويفشل تلقائياً إذا كانت القيمة null.",
+        "en": "Property patterns also imply not-null."
+      }
+    }
+  ]
+}

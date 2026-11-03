@@ -1,0 +1,383 @@
+{
+  "id": "p0-interfaces",
+  "title": {
+    "ar": "الواجهات والوراثة",
+    "en": "Interfaces & Inheritance"
+  },
+  "summary": {
+    "ar": "العقود (Interfaces)، والوراثة، و virtual/override، وتعدد الأشكال: الأساس الذي يقوم عليه حقن الاعتماديات في ASP.NET Core.",
+    "en": "Interfaces, inheritance, virtual/override and polymorphism: the foundation of DI in ASP.NET Core."
+  },
+  "minutes": 30,
+  "terms": [
+    "dependency-injection",
+    "interface",
+    "inheritance",
+    "polymorphism",
+    "abstract-class",
+    "sealed"
+  ],
+  "exercises": [
+    "p0-ex-shapes"
+  ],
+  "sections": [
+    {
+      "type": "text",
+      "ar": "[[interface]] عقد: «أي صنف يطبّقني يعدك بأن لديه هذه الدوال». الواجهة لا تحتوي تنفيذاً (عادةً)، فقط التوقيعات. والاصطلاح أن يبدأ اسمها بحرف `I`: `IEmailSender` و `IRepository<T>` و `ILogger<T>`.\n\nلماذا هذا مهم جداً لمطوّر Backend؟ لأن ASP.NET Core مبني بالكامل على فكرة: «اطلب واجهة، ودع الإطار يعطيك التنفيذ المناسب». هذا هو [[dependency-injection]] الذي ستتعمق فيه في المرحلة 3.",
+      "en": "An interface is a contract of members without implementation. ASP.NET Core is built on asking for interfaces and letting DI supply implementations."
+    },
+    {
+      "type": "analogy",
+      "ar": "الواجهة مثل مقبس USB-C. الحاسوب لا يهمه إن كان الطرف الآخر شاحن Samsung أو سماعة أو قرصاً خارجياً، يهمه فقط أنه يلتزم بمواصفة USB-C. وهكذا تستطيع استبدال الجهاز دون تغيير الحاسوب. في الكود: الـ Controller لا يهمه إن كان `IEmailSender` يرسل عبر SMTP أو SendGrid أو يكتب في ملف أثناء الاختبار.",
+      "en": "An interface is like a USB-C port: the laptop doesn't care which device implements the spec."
+    },
+    {
+      "type": "compare",
+      "title": {
+        "ar": "الواجهات في TypeScript و PHP و C#",
+        "en": "Interfaces in TypeScript, PHP and C#"
+      },
+      "items": [
+        {
+          "lang": "typescript",
+          "label": "TypeScript",
+          "code": "interface Shape { area(): number; }\n\n// Structural typing: any object with area() IS a Shape\nconst s: Shape = { area: () => 4 };"
+        },
+        {
+          "lang": "php",
+          "label": "PHP",
+          "code": "interface Shape { public function area(): float; }\n\nclass Square implements Shape {\n    public function __construct(private float $side) {}\n    public function area(): float { return $this->side ** 2; }\n}"
+        },
+        {
+          "lang": "csharp",
+          "label": "C#",
+          "code": "public interface IShape { double Area(); }\n\n// Nominal typing: must DECLARE that it implements IShape\npublic class Square(double side) : IShape\n{\n    public double Area() => side * side;\n}"
+        }
+      ],
+      "note": {
+        "ar": "فرق مهم: TypeScript «بنيوية» (Structural)، فأي كائن له نفس الشكل يُقبل. C# «اسمية» (Nominal): يجب أن يعلن الصنف صراحةً `: IShape`، وإلا فلن يُقبل حتى لو كان له نفس الدوال.",
+        "en": "TypeScript is structural; C# is nominal: a class must declare `: IShape`."
+      }
+    },
+    {
+      "type": "heading",
+      "ar": "الوراثة و virtual/override",
+      "en": "Inheritance and virtual/override"
+    },
+    {
+      "type": "text",
+      "ar": "[[inheritance]]: الصنف الابن يأخذ كل أعضاء الأب، ويضيف عليها أو يستبدلها. في C# يرث الصنف من **صنف واحد فقط**، لكنه يستطيع تطبيق **عدد غير محدود** من الواجهات: `class Square : Rectangle, IComparable<Square>, IDisposable`.\n\nلكي يستبدل الابن دالة من الأب يجب أن يسمح الأب بذلك:\n- الأب: `public virtual string Name => \"Rectangle\";`\n- الابن: `public override string Name => \"Square\";`\n\nهذا ما يحقق [[polymorphism]]: عندما تستدعي `shape.Name` يُنفَّذ تنفيذ **النوع الحقيقي** للكائن، حتى لو كان المتغير من نوع الأب أو الواجهة.",
+      "en": "Single class inheritance, multiple interfaces. virtual + override enable polymorphism."
+    },
+    {
+      "type": "annotated",
+      "lang": "csharp",
+      "title": {
+        "ar": "تعدد الأشكال عملياً",
+        "en": "Polymorphism in action"
+      },
+      "code": "IShape[] shapes = { new Rectangle(2, 3), new Square(2) };\nforeach (var s in shapes)\n    Console.WriteLine($\"{s.Name}: {s.Area()}\");\n\npublic interface IShape\n{\n    string Name { get; }\n    double Area();\n}\n\npublic class Rectangle(double w, double h) : IShape\n{\n    public virtual string Name => \"Rectangle\";\n    public double Area() => w * h;\n}\n\npublic class Square(double side) : Rectangle(side, side)\n{\n    public override string Name => \"Square\";\n}",
+      "notes": {
+        "1": {
+          "ar": "مصفوفة من نوع الواجهة تحمل كائنات من أصناف مختلفة.",
+          "en": "An array of the interface type holding different classes."
+        },
+        "3": {
+          "ar": "تعدد الأشكال: نفس السطر ينفّذ تنفيذاً مختلفاً حسب النوع الحقيقي للكائن: Rectangle ثم Square.",
+          "en": "Polymorphism: the real type's implementation runs."
+        },
+        "5": {
+          "ar": "الواجهة: عقد بلا تنفيذ. كل أعضائها public ضمنياً.",
+          "en": "The contract; members are implicitly public."
+        },
+        "11": {
+          "ar": "`: IShape` إعلان صريح بأن Rectangle يطبّق العقد. لو نسيت دالة Area سيرفض المترجم (CS0535).",
+          "en": "Explicitly implements the contract (CS0535 if a member is missing)."
+        },
+        "13": {
+          "ar": "`virtual`: أسمح للأبناء باستبدال هذه الخاصية.",
+          "en": "virtual: subclasses may replace it."
+        },
+        "17": {
+          "ar": "Square يرث من Rectangle ويمرر side مرتين للأب.",
+          "en": "Square inherits and passes side twice to the base."
+        },
+        "19": {
+          "ar": "`override`: استبدال حقيقي. لو كتبت `new` بدلاً منها لطبع السطر 3 \"Rectangle\" للمربع!",
+          "en": "override replaces it; `new` would only hide it."
+        }
+      }
+    },
+    {
+      "type": "code",
+      "lang": "csharp",
+      "code": "IShape good = new GoodSquare(2), bad = new BadSquare(2);\nConsole.WriteLine(good.Name); // Square\nConsole.WriteLine(bad.Name);  // Rectangle  <-- \"new\" hides, it doesn't override\n\npublic interface IShape { string Name { get; } double Area(); }\npublic class Rectangle(double w, double h) : IShape\n{\n    public virtual string Name => \"Rectangle\";\n    public double Area() => w * h;\n}\npublic class GoodSquare(double s) : Rectangle(s, s) { public override string Name => \"Square\"; }\npublic class BadSquare(double s) : Rectangle(s, s) { public new string Name => \"Square\"; }",
+      "title": {
+        "ar": "شاهد الفرق بين override و new",
+        "en": "See override vs new"
+      },
+      "runnable": true
+    },
+    {
+      "type": "heading",
+      "ar": "الصنف المجرد أم الواجهة؟",
+      "en": "Abstract class or interface?"
+    },
+    {
+      "type": "table",
+      "headers": [
+        {
+          "ar": ""
+        },
+        {
+          "ar": "[[interface]]",
+          "en": "Interface"
+        },
+        {
+          "ar": "[[abstract-class]]",
+          "en": "Abstract class"
+        }
+      ],
+      "rows": [
+        [
+          "الهدف",
+          "عقد: «ماذا تستطيع أن تفعل»",
+          "أساس مشترك: «ما أنت» + كود مشترك"
+        ],
+        [
+          "العدد",
+          "يطبّق الصنف عدة واجهات",
+          "يرث الصنف صنفاً واحداً فقط"
+        ],
+        [
+          "الحالة (حقول)",
+          "لا",
+          "نعم"
+        ],
+        [
+          "الاستخدام في ASP.NET Core",
+          "الخدمات: `IUserService` و `IRepository<T>`",
+          "قواعد مشتركة: `ControllerBase` و `BackgroundService`"
+        ]
+      ]
+    },
+    {
+      "type": "text",
+      "ar": "القاعدة العملية: **ابدأ بواجهة**. استخدم صنفاً مجرداً فقط عندما يكون لديك كود مشترك حقيقي بين الأبناء. وأضف [[sealed]] للأصناف التي لم تُصمَّم لتُورث.",
+      "en": "Default to interfaces; use an abstract class only for real shared code."
+    },
+    {
+      "type": "source",
+      "path": "Backend/LearnBackend.Api/Content/ContentModels.cs",
+      "find": "public interface ICompilerErrorCatalog",
+      "context": 6,
+      "note": {
+        "ar": "واجهة حقيقية في هذا التطبيق: مشغّل الكود يحتاج فقط «شيئاً يترجم رموز الأخطاء للعربية»، ولا يهتم من أين يأتي.",
+        "en": "A real interface: the code runner only needs \"something that explains error codes\"."
+      }
+    },
+    {
+      "type": "source",
+      "path": "Backend/LearnBackend.Api/Content/ContentStore.cs",
+      "find": "public sealed class ContentStore : ICompilerErrorCatalog, IDisposable",
+      "context": 2,
+      "note": {
+        "ar": "صنف يطبّق واجهتين في نفس الوقت. وفي الاختبارات نمرر تنفيذاً مزيفاً بسيطاً بدلاً منه.",
+        "en": "One class implementing two interfaces; tests pass a simple fake instead."
+      }
+    },
+    {
+      "type": "source",
+      "path": "Backend/LearnBackend.Api/CodeRunner/CompilerWarmupService.cs",
+      "find": "protected override Task ExecuteAsync",
+      "context": 4,
+      "note": {
+        "ar": "وراثة من صنف مجرد في الإطار: `BackgroundService` يترك لك تنفيذ `ExecuteAsync` بـ override.",
+        "en": "Inheriting a framework abstract class and overriding ExecuteAsync."
+      }
+    },
+    {
+      "type": "mistakes",
+      "items": [
+        {
+          "title": {
+            "ar": "استخدام new بدلاً من override",
+            "en": "Using new instead of override"
+          },
+          "wrong": "public new string Name => \"Square\";",
+          "right": "public override string Name => \"Square\";",
+          "ar": "new تُخفي العضو فقط عندما يكون نوع المتغير هو الابن، وعبر الواجهة أو الأب يُنفَّذ تنفيذ الأب. المترجم يحذّرك بـ CS0108 إن نسيت الاثنين.",
+          "en": "new hides; it doesn't participate in polymorphism."
+        },
+        {
+          "title": {
+            "ar": "الاعتماد على الصنف المحدد بدلاً من الواجهة",
+            "en": "Depending on the concrete class"
+          },
+          "wrong": "public class OrderService { private readonly SmtpEmailSender _email = new(); }",
+          "right": "public class OrderService(IEmailSender email) { }",
+          "ar": "بالـ new داخل الصنف لا يمكنك تبديل التنفيذ أو اختباره دون إرسال بريد حقيقي.",
+          "en": "Hard-coded `new` prevents swapping and testing."
+        },
+        {
+          "title": {
+            "ar": "سلاسل وراثة طويلة",
+            "en": "Deep inheritance chains"
+          },
+          "wrong": "class AdminUser : PremiumUser : RegisteredUser : User : Entity",
+          "right": "class User { public Role Role { get; set; } }  // composition over inheritance",
+          "ar": "الوراثة العميقة تجعل أي تعديل في الأب يكسر الأبناء. فضّل التركيب (Composition) والواجهات.",
+          "en": "Prefer composition over deep hierarchies."
+        }
+      ]
+    }
+  ],
+  "quiz": [
+    {
+      "question": {
+        "ar": "كم صنفاً يمكن أن يرث صنف C# واحد؟",
+        "en": "How many classes can a C# class inherit from?"
+      },
+      "options": [
+        {
+          "ar": "واحد فقط",
+          "en": "Exactly one"
+        },
+        {
+          "ar": "اثنان",
+          "en": "Two"
+        },
+        {
+          "ar": "غير محدود",
+          "en": "Unlimited"
+        },
+        {
+          "ar": "صفر",
+          "en": "Zero"
+        }
+      ],
+      "answer": 0,
+      "explanation": {
+        "ar": "وراثة صنف واحد فقط، وعدد غير محدود من الواجهات.",
+        "en": "One base class, many interfaces."
+      }
+    },
+    {
+      "question": {
+        "ar": "ماذا يطبع الكود؟",
+        "en": "What does this print?"
+      },
+      "options": [
+        {
+          "ar": "Dog",
+          "en": "Dog"
+        },
+        {
+          "ar": "Animal",
+          "en": "Animal"
+        },
+        {
+          "ar": "خطأ ترجمة",
+          "en": "Compile error"
+        },
+        {
+          "ar": "لا شيء",
+          "en": "Nothing"
+        }
+      ],
+      "answer": 0,
+      "explanation": {
+        "ar": "override يحقق تعدد الأشكال: يُنفَّذ تنفيذ النوع الحقيقي Dog.",
+        "en": "override → the real type's implementation runs."
+      },
+      "code": "class Animal { public virtual string Sound() => \"Animal\"; }\nclass Dog : Animal { public override string Sound() => \"Dog\"; }\nAnimal a = new Dog();\nConsole.WriteLine(a.Sound());"
+    },
+    {
+      "question": {
+        "ar": "صنف يطبّق واجهة لكنه نسي إحدى دوالها. ماذا يحدث؟",
+        "en": "A class implements an interface but misses a member. What happens?"
+      },
+      "options": [
+        {
+          "ar": "يعمل ويرمي استثناء عند الاستدعاء",
+          "en": "Throws when called"
+        },
+        {
+          "ar": "خطأ ترجمة CS0535",
+          "en": "Compile error CS0535"
+        },
+        {
+          "ar": "المترجم يولّد دالة فارغة",
+          "en": "The compiler generates an empty one"
+        },
+        {
+          "ar": "تحذير فقط",
+          "en": "Just a warning"
+        }
+      ],
+      "answer": 1,
+      "explanation": {
+        "ar": "العقد يُفرض وقت الترجمة.",
+        "en": "Contracts are enforced at compile time."
+      }
+    },
+    {
+      "question": {
+        "ar": "لماذا تعتمد الخدمات في ASP.NET Core على واجهات؟",
+        "en": "Why do ASP.NET Core services depend on interfaces?"
+      },
+      "options": [
+        {
+          "ar": "لأنها أسرع",
+          "en": "They're faster"
+        },
+        {
+          "ar": "لتسهيل تبديل التنفيذ واختباره (Dependency Injection)",
+          "en": "To swap implementations and test (DI)"
+        },
+        {
+          "ar": "لأن الأصناف لا تعمل مع DI",
+          "en": "Classes don't work with DI"
+        },
+        {
+          "ar": "لتقليل حجم الملف",
+          "en": "Smaller files"
+        }
+      ],
+      "answer": 1,
+      "explanation": {
+        "ar": "الواجهة تفصل «ماذا» عن «كيف»، فتستطيع تمرير تنفيذ حقيقي في الإنتاج وتنفيذ مزيف في الاختبار.",
+        "en": "Decoupling what from how."
+      }
+    },
+    {
+      "question": {
+        "ar": "ما الفرق الأساسي بين واجهات TypeScript وواجهات C#؟",
+        "en": "Key difference between TS and C# interfaces?"
+      },
+      "options": [
+        {
+          "ar": "لا فرق",
+          "en": "None"
+        },
+        {
+          "ar": "C# اسمية: يجب أن يعلن الصنف أنه يطبّق الواجهة",
+          "en": "C# is nominal: a class must declare it"
+        },
+        {
+          "ar": "TypeScript لا تدعم الواجهات",
+          "en": "TS has no interfaces"
+        },
+        {
+          "ar": "واجهات C# تحتوي حقولاً",
+          "en": "C# interfaces have fields"
+        }
+      ],
+      "answer": 1,
+      "explanation": {
+        "ar": "TypeScript بنيوية تقبل أي شكل مطابق، و C# تحتاج إعلاناً صريحاً.",
+        "en": "Structural vs nominal typing."
+      }
+    }
+  ]
+}

@@ -1,0 +1,401 @@
+{
+  "id": "p0-async",
+  "title": {
+    "ar": "async و await والمهام",
+    "en": "async/await & Tasks"
+  },
+  "summary": {
+    "ar": "Task مقابل Promise، ولماذا await لا تجعل الكود أسرع بل تجعل الخادم يخدم مستخدمين أكثر، وتشغيل المهام بالتوازي.",
+    "en": "Task vs Promise, why await doesn't make code faster but lets the server serve more users, and running work concurrently."
+  },
+  "minutes": 35,
+  "terms": [
+    "async-await",
+    "task",
+    "thread-pool",
+    "async-void",
+    "task-whenall",
+    "cancellation-token"
+  ],
+  "exercises": [
+    "p0-ex-async-dashboard"
+  ],
+  "sections": [
+    {
+      "type": "text",
+      "ar": "أنت تعرف هذا من JavaScript: `const res = await fetch(url);`. في C# الشكل متطابق تقريباً:\n\n`var json = await http.GetStringAsync(url);`\n\n[[task]] في C# = Promise في JavaScript. و `async` / `await` نفس الفكرة. لكن **السبب** مختلف قليلاً، وهو جوهري لفهم الـ Backend.",
+      "en": "Task ≈ Promise and async/await looks the same, but the reason it matters on servers is different."
+    },
+    {
+      "type": "analogy",
+      "ar": "تخيّل مطعماً فيه 10 نُدُل (Threads). نادل **متزامن** يأخذ طلبك ويقف بجانب المطبخ 15 دقيقة ينتظر الطبق، فبعد 10 زبائن ينتظر الزبون الحادي عشر في الباب رغم أن النُدُل لا يفعلون شيئاً! أما النادل **غير المتزامن** فيرسل الطلب للمطبخ ويخدم طاولات أخرى، ويعود عندما يرن جرس المطبخ.\n\n`await` هي «أرسل الطلب ولا تقف منتظراً». الطبق لا يُطبخ أسرع، لكن المطعم يخدم زبائن أكثر بنفس عدد النُدُل.",
+      "en": "A restaurant with 10 waiters: a synchronous waiter stands at the kitchen; an async one serves other tables. Food isn't faster, but more customers are served."
+    },
+    {
+      "type": "text",
+      "ar": "في JavaScript هناك Thread واحد، و await تمنع تجميد الواجهة. في ASP.NET Core هناك [[thread-pool]]: كل طلب HTTP يُخدم على Thread. عندما يكتب كودك `await db.SaveChangesAsync()`، يعود الـ Thread للمجمّع ليخدم طلباً آخر أثناء انتظار قاعدة البيانات. بدون async سيتجمد الخادم تحت الضغط رغم أن المعالج فارغ (Thread starvation).",
+      "en": "In ASP.NET Core, await returns the thread to the pool while waiting on I/O so the server can handle more requests."
+    },
+    {
+      "type": "compare",
+      "title": {
+        "ar": "نفس الكود في JavaScript و PHP و C#",
+        "en": "Same code in JS, PHP and C#"
+      },
+      "items": [
+        {
+          "lang": "javascript",
+          "label": "JavaScript",
+          "code": "async function getUser(id) {\n  const res = await fetch(`/api/users/${id}`);\n  return await res.json();\n}\n\nconst [a, b] = await Promise.all([getUser(1), getUser(2)]);"
+        },
+        {
+          "lang": "php",
+          "label": "PHP",
+          "code": "// PHP is synchronous by default: each request has its own\n// process/thread and simply blocks while waiting.\nfunction getUser(int $id): array {\n    $json = file_get_contents(\"https://api/users/$id\");\n    return json_decode($json, true);\n}"
+        },
+        {
+          "lang": "csharp",
+          "label": "C#",
+          "code": "async Task<User?> GetUserAsync(int id)\n{\n    return await http.GetFromJsonAsync<User>($\"/api/users/{id}\");\n}\n\nvar users = await Task.WhenAll(GetUserAsync(1), GetUserAsync(2));"
+        }
+      ],
+      "note": {
+        "ar": "الاصطلاح في ‎.NET: كل دالة async ينتهي اسمها بـ `Async` وترجع `Task` أو `Task<T>`.",
+        "en": "Convention: async methods end with Async and return Task/Task<T>."
+      }
+    },
+    {
+      "type": "heading",
+      "ar": "أنواع الإرجاع",
+      "en": "Return types"
+    },
+    {
+      "type": "table",
+      "headers": [
+        {
+          "ar": "النوع",
+          "en": "Type"
+        },
+        {
+          "ar": "متى",
+          "en": "When"
+        },
+        {
+          "ar": "يقابل في JS",
+          "en": "JS"
+        }
+      ],
+      "rows": [
+        [
+          "`Task`",
+          "دالة async لا ترجع قيمة",
+          "`Promise<void>`"
+        ],
+        [
+          "`Task<T>`",
+          "دالة async ترجع T",
+          "`Promise<T>`"
+        ],
+        [
+          "`ValueTask<T>`",
+          "أداء عالٍ عندما تكتمل النتيجة غالباً فوراً (Cache)",
+          "(لا يوجد)"
+        ],
+        [
+          "`async void`",
+          "**ممنوع** إلا لمعالجات الأحداث في الواجهات. انظر [[async-void]]",
+          "(لا يوجد)"
+        ]
+      ]
+    },
+    {
+      "type": "heading",
+      "ar": "متسلسل أم متوازٍ؟",
+      "en": "Sequential or concurrent?"
+    },
+    {
+      "type": "text",
+      "ar": "هذا أكثر ما يُسأل عنه في المقابلات. `await` داخل حلقة يجعل كل طلب ينتظر الذي قبله. إذا كانت الطلبات مستقلة، **ابدأها كلها أولاً** ثم انتظرها معاً بـ [[task-whenall]].",
+      "en": "await in a loop is sequential; start independent tasks first and await Task.WhenAll."
+    },
+    {
+      "type": "visual",
+      "name": "async-timeline",
+      "caption": {
+        "ar": "قارن بين التنفيذ المتسلسل و Task.WhenAll على خط زمني.",
+        "en": "Compare sequential awaits with Task.WhenAll on a timeline."
+      }
+    },
+    {
+      "type": "annotated",
+      "lang": "csharp",
+      "title": {
+        "ar": "متسلسل مقابل Task.WhenAll",
+        "en": "Sequential vs Task.WhenAll"
+      },
+      "code": "async Task<int> GetTemperatureAsync(string city)\n{\n    await Task.Delay(300);\n    return city.Length * 3;\n}\n\nvar cities = new[] { \"Amman\", \"Cairo\", \"Riyadh\" };\nvar sw = System.Diagnostics.Stopwatch.StartNew();\n\nforeach (var c in cities)\n    Console.WriteLine(await GetTemperatureAsync(c));\nConsole.WriteLine($\"Sequential: {sw.ElapsedMilliseconds} ms\");\n\nsw.Restart();\nvar tasks = cities.Select(GetTemperatureAsync).ToList();\nvar temps = await Task.WhenAll(tasks);\nConsole.WriteLine($\"WhenAll: {sw.ElapsedMilliseconds} ms -> {string.Join(\", \", temps)}\");",
+      "notes": {
+        "1": {
+          "ar": "دالة async ترجع `Task<int>`، أي «وعداً» برقم لاحقاً.",
+          "en": "Returns Task<int>: a promise of an int."
+        },
+        "3": {
+          "ar": "محاكاة لطلب شبكة يأخذ 300ms. `Task.Delay` لا يحجز الـ Thread، بعكس `Thread.Sleep`.",
+          "en": "Simulated I/O; Task.Delay doesn't block a thread."
+        },
+        "10": {
+          "ar": "حلقة مع await: الطلب الثاني لا يبدأ حتى ينتهي الأول.",
+          "en": "await in a loop: one after another."
+        },
+        "12": {
+          "ar": "حوالي 900ms (3 × 300).",
+          "en": "≈900 ms."
+        },
+        "15": {
+          "ar": "نبدأ كل المهام **بدون** await. `ToList()` مهمة هنا حتى لا يعيد التنفيذ المؤجل تشغيلها!",
+          "en": "Start all tasks without awaiting; ToList avoids re-running them."
+        },
+        "16": {
+          "ar": "ننتظرها معاً. والنتائج بنفس ترتيب المدن.",
+          "en": "Await them together; results keep the order."
+        },
+        "17": {
+          "ar": "حوالي 300ms فقط.",
+          "en": "≈300 ms."
+        }
+      }
+    },
+    {
+      "type": "code",
+      "lang": "csharp",
+      "code": "async Task<int> SlowAsync(int ms) { await Task.Delay(ms); return ms; }\n\nvar sw = System.Diagnostics.Stopwatch.StartNew();\nvar a = await SlowAsync(400);\nvar b = await SlowAsync(400);\nConsole.WriteLine($\"Sequential: {a + b} in ~{sw.ElapsedMilliseconds} ms\");\n\nsw.Restart();\nvar both = await Task.WhenAll(SlowAsync(400), SlowAsync(400));\nConsole.WriteLine($\"WhenAll: {both.Sum()} in ~{sw.ElapsedMilliseconds} ms\");\n\n// Timeout: give up after 100 ms\ntry { await SlowAsync(2000).WaitAsync(TimeSpan.FromMilliseconds(100)); }\ncatch (TimeoutException) { Console.WriteLine(\"Timed out!\"); }",
+      "title": {
+        "ar": "قِس الفرق بنفسك",
+        "en": "Measure it yourself"
+      },
+      "runnable": true
+    },
+    {
+      "type": "heading",
+      "ar": "CancellationToken",
+      "en": "CancellationToken"
+    },
+    {
+      "type": "text",
+      "ar": "[[cancellation-token]] طريقة لإيقاف عمل لم يعد أحد ينتظره. في ASP.NET Core يكفي أن تضيف `CancellationToken ct` كمعامل في الـ Endpoint، والإطار يلغيه تلقائياً إذا أغلق المستخدم الصفحة. ثم مرّره لكل دالة async: `await db.Orders.ToListAsync(ct)`.",
+      "en": "Add a CancellationToken parameter to endpoints and pass it down; ASP.NET Core cancels it when the client disconnects."
+    },
+    {
+      "type": "source",
+      "path": "Backend/LearnBackend.Api/Endpoints/ExerciseEndpoints.cs",
+      "find": "var result = await runner.RunTestsAsync(request.Code, exercise.TestsCode, ct);",
+      "context": 6,
+      "note": {
+        "ar": "عندما تضغط «تشغيل الاختبارات»: Endpoint غير متزامن ينتظر الترجمة والتشغيل في عملية منفصلة، ويمرر الـ CancellationToken.",
+        "en": "The submit endpoint awaits the sandbox and passes the CancellationToken along."
+      }
+    },
+    {
+      "type": "source",
+      "path": "Backend/LearnBackend.Api/CodeRunner/SandboxProcessRunner.cs",
+      "find": "await Task.WhenAny(exited, Task.Delay(40, CancellationToken.None));",
+      "context": 8,
+      "note": {
+        "ar": "Task.WhenAny: انتظر أيهما ينتهي أولاً، خروج العملية أو مرور 40ms، لفحص المهلة والذاكرة دورياً دون حجز Thread.",
+        "en": "WhenAny: whichever finishes first, used to poll limits without blocking a thread."
+      }
+    },
+    {
+      "type": "mistakes",
+      "items": [
+        {
+          "title": {
+            "ar": ".Result و .Wait() (Sync over async)",
+            "en": ".Result / .Wait() (sync over async)"
+          },
+          "wrong": "var user = GetUserAsync(id).Result; // blocks a thread",
+          "right": "var user = await GetUserAsync(id);",
+          "ar": "يحجز الـ Thread طوال الانتظار، وقد يسبب Deadlock في بعض البيئات و Thread starvation في الخوادم. القاعدة: async على طول الطريق (Async all the way).",
+          "en": "Blocks a thread; can deadlock or starve the pool."
+        },
+        {
+          "title": {
+            "ar": "async void",
+            "en": "async void"
+          },
+          "wrong": "public async void SendEmail() { ... }",
+          "right": "public async Task SendEmailAsync() { ... }",
+          "ar": "لا يمكن انتظارها، واستثناؤها قد يُسقط العملية كلها.",
+          "en": "Can't be awaited; exceptions can crash the process."
+        },
+        {
+          "title": {
+            "ar": "نسيان await",
+            "en": "Forgetting await"
+          },
+          "wrong": "db.SaveChangesAsync(); // warning CS4014, may not finish",
+          "right": "await db.SaveChangesAsync();",
+          "ar": "المهمة تبدأ لكن لا أحد ينتظرها ولا يرى أخطاءها. المترجم يحذرك بـ CS4014.",
+          "en": "Fire-and-forget by accident (CS4014)."
+        },
+        {
+          "title": {
+            "ar": "Thread.Sleep داخل كود async",
+            "en": "Thread.Sleep in async code"
+          },
+          "wrong": "Thread.Sleep(1000);",
+          "right": "await Task.Delay(1000);",
+          "ar": "Thread.Sleep تحجز الـ Thread، و Task.Delay تحرره.",
+          "en": "Thread.Sleep blocks; Task.Delay doesn't."
+        }
+      ]
+    }
+  ],
+  "quiz": [
+    {
+      "question": {
+        "ar": "ما مقابل Promise في C#؟",
+        "en": "C# equivalent of a Promise?"
+      },
+      "options": [
+        {
+          "ar": "Thread",
+          "en": "Thread"
+        },
+        {
+          "ar": "Task",
+          "en": "Task"
+        },
+        {
+          "ar": "Delegate",
+          "en": "Delegate"
+        },
+        {
+          "ar": "Event",
+          "en": "Event"
+        }
+      ],
+      "answer": 1,
+      "explanation": {
+        "ar": "Task و Task<T> تمثلان عملية تكتمل لاحقاً.",
+        "en": "Task/Task<T>."
+      }
+    },
+    {
+      "question": {
+        "ar": "لماذا async مهم في ASP.NET Core؟",
+        "en": "Why does async matter in ASP.NET Core?"
+      },
+      "options": [
+        {
+          "ar": "يجعل كل طلب أسرع",
+          "en": "Makes each request faster"
+        },
+        {
+          "ar": "يحرر الـ Thread أثناء انتظار I/O فيخدم الخادم طلبات أكثر",
+          "en": "Frees threads during I/O so the server handles more requests"
+        },
+        {
+          "ar": "ضروري لكتابة JSON",
+          "en": "Required to write JSON"
+        },
+        {
+          "ar": "يمنع الأخطاء",
+          "en": "Prevents errors"
+        }
+      ],
+      "answer": 1,
+      "explanation": {
+        "ar": "await لا يسرّع العملية نفسها لكنه يحسّن قابلية التوسع (Scalability).",
+        "en": "Scalability, not speed."
+      }
+    },
+    {
+      "question": {
+        "ar": "الطلبات الثلاثة مستقلة. أي كود هو الأسرع؟",
+        "en": "Three independent calls: which is fastest?"
+      },
+      "options": [
+        {
+          "ar": "await داخل foreach",
+          "en": "await inside foreach"
+        },
+        {
+          "ar": "بدء المهام ثم await Task.WhenAll",
+          "en": "Start tasks then await Task.WhenAll"
+        },
+        {
+          "ar": "استخدام .Result لكل طلب",
+          "en": "Use .Result on each"
+        },
+        {
+          "ar": "Thread.Sleep بينها",
+          "en": "Thread.Sleep between them"
+        }
+      ],
+      "answer": 1,
+      "explanation": {
+        "ar": "WhenAll ينتظرها معاً فيكون الوقت الكلي ≈ أطولها، لا مجموعها.",
+        "en": "Total ≈ the slowest, not the sum."
+      }
+    },
+    {
+      "question": {
+        "ar": "ما مشكلة `GetDataAsync().Result` في خادم ويب؟",
+        "en": "Problem with `.Result` on a web server?"
+      },
+      "options": [
+        {
+          "ar": "لا مشكلة",
+          "en": "None"
+        },
+        {
+          "ar": "تحجز Thread وقد تسبب Deadlock أو Thread starvation",
+          "en": "Blocks a thread; deadlock or starvation risk"
+        },
+        {
+          "ar": "ترجع null دائماً",
+          "en": "Always null"
+        },
+        {
+          "ar": "لا تُترجم",
+          "en": "Doesn't compile"
+        }
+      ],
+      "answer": 1,
+      "explanation": {
+        "ar": "Async all the way: استخدم await.",
+        "en": "Use await all the way."
+      }
+    },
+    {
+      "question": {
+        "ar": "ما نوع الإرجاع الصحيح لدالة async ترجع رقماً؟",
+        "en": "Correct return type for an async method returning a number?"
+      },
+      "options": [
+        {
+          "ar": "async int",
+          "en": "async int"
+        },
+        {
+          "ar": "async Task<int>",
+          "en": "async Task<int>"
+        },
+        {
+          "ar": "async void",
+          "en": "async void"
+        },
+        {
+          "ar": "Task",
+          "en": "Task"
+        }
+      ],
+      "answer": 1,
+      "explanation": {
+        "ar": "Task<int>، والقيمة تُرجع بـ return 5; عادي داخل الدالة.",
+        "en": "Task<int>; you still write `return 5;`."
+      }
+    }
+  ]
+}

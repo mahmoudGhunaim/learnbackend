@@ -1,0 +1,16 @@
+{
+  "id": "p0-ex-async-dashboard",
+  "title": { "ar": "لوحة معلومات غير متزامنة", "en": "Async Dashboard" },
+  "kind": "exercise",
+  "difficulty": "hard",
+  "terms": ["async-await", "task", "task-whenall", "cancellation-token", "exception"],
+  "prompt": {
+    "ar": "صفحة رئيسية تعرض الطقس لعدة مدن + آخر الأخبار. كل استدعاء لخدمة خارجية يأخذ وقتاً (مثل fetch في JavaScript).\n\nأكمل `DashboardBuilder`:\n\n- `BuildAsync(cities)`: يجلب حرارة كل المدن **والأخبار** في نفس الوقت (بالتوازي، Concurrently) وليس واحداً تلو الآخر، ويرجع `Dashboard`. هذا هو المقابل لـ `Promise.all` في JavaScript.\n- `TryGetTemperatureAsync(city, timeout)`: يرجع الحرارة، أو `null` إذا رمت الخدمة استثناءً **أو** لم ترد خلال المهلة timeout.\n\nالاختبارات تقيس كم طلباً كان يعمل في نفس اللحظة، فالحل المتسلسل (await داخل foreach) سيفشل.",
+    "en": "Implement `BuildAsync` so all city temperatures **and** the headlines are fetched concurrently (like `Promise.all`), and `TryGetTemperatureAsync(city, timeout)` returning `null` if the service throws or doesn't answer in time. Tests measure how many calls run at the same time, so a sequential `await` inside `foreach` fails."
+  },
+  "hints": [
+    { "ar": "ابدأ كل المهام أولاً **بدون** await: `var tempTasks = cities.Select(c => weather.GetTemperatureAsync(c)).ToList();` و `var newsTask = news.GetHeadlinesAsync();` ثم انتظرها كلها معاً.", "en": "Start all tasks first without awaiting, then await them together." },
+    { "ar": "`await Task.WhenAll(tempTasks)` ترجع `int[]` بنفس ترتيب المدن. ثم `await newsTask`. استخدم `.ToList()` بعد Select حتى لا تُنشأ المهام مرتين بسبب التنفيذ المؤجل (Deferred execution)!", "en": "`await Task.WhenAll(tempTasks)` returns results in order. Call `.ToList()` so deferred execution doesn't start the tasks twice." },
+    { "ar": "للمهلة: `await task.WaitAsync(timeout)` ترمي `TimeoutException` إذا انتهت المهلة. ضعها داخل `try { ... } catch (Exception) { return null; }`.", "en": "`await task.WaitAsync(timeout)` throws TimeoutException; wrap in try/catch and return null." }
+  ]
+}

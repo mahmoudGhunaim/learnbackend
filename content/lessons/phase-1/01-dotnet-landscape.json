@@ -1,0 +1,390 @@
+{
+  "id": "p1-dotnet-landscape",
+  "title": {
+    "ar": "‎.NET مقابل ‎.NET Framework",
+    "en": ".NET vs .NET Framework"
+  },
+  "summary": {
+    "ar": "خريطة الأسماء المربكة: ‎.NET Framework و ‎.NET Core و ‎.NET Standard و ‎.NET 10، وسياسة الدعم LTS و STS، وما تختاره لمشروع جديد اليوم.",
+    "en": "Untangling .NET Framework, .NET Core, .NET Standard and .NET 10, the LTS/STS support policy, and what to pick today."
+  },
+  "minutes": 20,
+  "terms": [
+    "dotnet-framework",
+    "dotnet",
+    "cross-platform",
+    "dotnet-standard",
+    "tfm",
+    "lts",
+    "target-framework"
+  ],
+  "exercises": [
+    "p1-ex-tfm"
+  ],
+  "sections": [
+    {
+      "type": "text",
+      "ar": "أكثر ما يربك المبتدئين في عالم ‎.NET هو **الأسماء**. ستقرأ في Stack Overflow إجابات عن «‎.NET Framework 4.7» وأخرى عن «‎.NET Core 3.1» وثالثة عن «‎.NET 8»، وكلها تبدو نفس الشيء. هذا الدرس يرسم لك الخريطة مرة واحدة وإلى الأبد.",
+      "en": "The names are the most confusing part of .NET; this lesson draws the map once and for all."
+    },
+    {
+      "type": "table",
+      "headers": [
+        {
+          "ar": "المنصة",
+          "en": "Platform"
+        },
+        {
+          "ar": "السنوات",
+          "en": "Years"
+        },
+        {
+          "ar": "الأنظمة",
+          "en": "OS"
+        },
+        {
+          "ar": "الحالة اليوم",
+          "en": "Status today"
+        }
+      ],
+      "rows": [
+        [
+          "[[dotnet-framework]] 1.0 → 4.8.1",
+          "2002 → 2022",
+          "Windows فقط",
+          "مدعومة مع Windows، **بلا ميزات جديدة**. للصيانة فقط"
+        ],
+        [
+          "‎.NET Core 1.0 → 3.1",
+          "2016 → 2019",
+          "Windows و Linux و macOS",
+          "انتهى دعمها. إعادة كتابة كاملة مفتوحة المصدر"
+        ],
+        [
+          "[[dotnet]] 5 → 10 (أُسقطت كلمة Core)",
+          "2020 → اليوم",
+          "عابر للأنظمة ([[cross-platform]])",
+          "**هذا ما تتعلمه وتستخدمه**"
+        ],
+        [
+          "[[dotnet-standard]] 1.0 → 2.1",
+          "2016 → 2018",
+          "(مواصفة وليست منصة)",
+          "متوقفة. netstandard2.0 ما زالت مفيدة لمكتبات تحتاج ‎.NET Framework"
+        ]
+      ]
+    },
+    {
+      "type": "analogy",
+      "ar": "‎.NET Framework مثل بيت قديم جميل بنته العائلة قبل 20 عاماً: ما زال الناس يسكنونه، لكن لا يُبنى فيه طابق جديد. ‎.NET Core كان البيت الجديد العصري الذي بُني بجانبه، ثم صار هو «بيت العائلة» الرسمي وأُسقط عنه لقب «الجديد» فأصبح اسمه ‎.NET فقط. و ‎.NET Standard كان «عقد إيجار موحد» يسمح لك بنقل أثاثك (مكتباتك) بين البيتين.",
+      "en": ".NET Framework is the old family house still lived in; .NET Core was the new house that became just \".NET\"; .NET Standard was a shared lease letting furniture move between them."
+    },
+    {
+      "type": "text",
+      "ar": "**لماذا تخطّوا رقم 4؟** عندما دمجوا كل شيء في 2020 كان الإصدار التالي لـ ‎.NET Core 3.1 هو ‎.NET 5، وتجنبوا الرقم 4 حتى لا يختلط بـ ‎.NET Framework 4.x. ولهذا ترى في الـ [[tfm]]: `net48` تعني ‎.NET Framework 4.8، و `net8.0` تعني ‎.NET 8 الحديث. **النقطة** هي الفارق!",
+      "en": "They skipped 4 to avoid confusion with .NET Framework 4.x: net48 vs net8.0, and the dot is the difference."
+    },
+    {
+      "type": "heading",
+      "ar": "سياسة الدعم: LTS و STS",
+      "en": "Support policy: LTS and STS"
+    },
+    {
+      "type": "text",
+      "ar": "يصدر إصدار ‎.NET جديد **كل نوفمبر**. والقاعدة ([[lts]]):\n\n- **الإصدارات الزوجية = LTS** (دعم طويل الأمد): 3 سنوات من التحديثات الأمنية. الشركات تفضلها.\n- **الإصدارات الفردية = STS** (دعم قياسي): 24 شهراً، وفيها ميزات أحدث.\n\nفي نوفمبر 2026 الوضع هكذا:",
+      "en": "A new .NET ships every November: even = LTS (3 years), odd = STS (24 months)."
+    },
+    {
+      "type": "table",
+      "headers": [
+        {
+          "ar": "الإصدار",
+          "en": "Version"
+        },
+        {
+          "ar": "النوع",
+          "en": "Type"
+        },
+        {
+          "ar": "صدر",
+          "en": "Released"
+        },
+        {
+          "ar": "نهاية الدعم",
+          "en": "End of support"
+        }
+      ],
+      "rows": [
+        [
+          "‎.NET 8",
+          "LTS",
+          "نوفمبر 2023",
+          "10 نوفمبر 2026"
+        ],
+        [
+          "‎.NET 9",
+          "STS",
+          "نوفمبر 2024",
+          "10 نوفمبر 2026"
+        ],
+        [
+          "**‎.NET 10**",
+          "**LTS**",
+          "نوفمبر 2025",
+          "**نوفمبر 2028**"
+        ],
+        [
+          "‎.NET 11",
+          "STS",
+          "متوقع نوفمبر 2026",
+          "نوفمبر 2028 تقريباً"
+        ]
+      ]
+    },
+    {
+      "type": "callout",
+      "kind": "tip",
+      "ar": "**لمشروع جديد اليوم: ‎.NET 10.** هو الإصدار LTS الحالي، وهذا التطبيق نفسه مبني عليه. ‎.NET 8 و 9 ينتهي دعمهما هذا الشهر، فالمشاريع التي تستخدمهما يجب أن تنتقل إلى 10.",
+      "en": "For a new project today: .NET 10 (current LTS). .NET 8 and 9 reach end of support this month."
+    },
+    {
+      "type": "heading",
+      "ar": "الإطار المستهدف في ملف المشروع",
+      "en": "The target framework in the project file"
+    },
+    {
+      "type": "text",
+      "ar": "كل مشروع يحدد منصته في ملف ‎.csproj بـ [[target-framework]]. والمكتبات أحياناً تستهدف عدة أُطر معاً لتعمل في كل مكان:",
+      "en": "Each project declares its target framework; libraries may multi-target."
+    },
+    {
+      "type": "code",
+      "lang": "xml",
+      "code": "<!-- A modern web API -->\n<TargetFramework>net10.0</TargetFramework>\n\n<!-- A Windows desktop app (WPF / WinForms) -->\n<TargetFramework>net10.0-windows</TargetFramework>\n\n<!-- A library used by both old .NET Framework apps and modern .NET -->\n<TargetFrameworks>netstandard2.0;net8.0;net10.0</TargetFrameworks>\n\n<!-- A legacy app you might maintain at work -->\n<TargetFramework>net48</TargetFramework>",
+      "title": {
+        "ar": "أمثلة TFM ستراها في الواقع",
+        "en": "TFMs you'll see in the wild"
+      }
+    },
+    {
+      "type": "source",
+      "path": "Backend/LearnBackend.Api/LearnBackend.Api.csproj",
+      "find": "<TargetFramework>net10.0</TargetFramework>",
+      "context": 3,
+      "note": {
+        "ar": "هذا التطبيق يستهدف ‎.NET 10. افتح الملف وغيّر الرقم إلى net8.0 ثم اكتب dotnet build، وستلاحظ كيف تعتمد الحزم على الإصدار.",
+        "en": "This app targets .NET 10."
+      }
+    },
+    {
+      "type": "compare",
+      "title": {
+        "ar": "بيئات التشغيل المقابلة في عالمك",
+        "en": "Equivalent runtimes in your world"
+      },
+      "items": [
+        {
+          "lang": "javascript",
+          "label": "JavaScript",
+          "code": "// Node.js 22 LTS, Node.js 24...\n// \"even = LTS\" sounds familiar? Node uses the same idea!\nnode --version"
+        },
+        {
+          "lang": "php",
+          "label": "PHP",
+          "code": "// PHP 7.4 (legacy, like .NET Framework)\n// PHP 8.x (modern, like .NET 10)\nphp --version"
+        },
+        {
+          "lang": "bash",
+          "label": ".NET",
+          "code": "dotnet --list-sdks\ndotnet --list-runtimes\ndotnet --info"
+        }
+      ],
+      "note": {
+        "ar": "Node.js أيضاً يستخدم فكرة الإصدارات الزوجية LTS. والانتقال من ‎.NET Framework إلى ‎.NET الحديث يشبه الانتقال من PHP 5 إلى PHP 8.",
+        "en": "Node.js uses a similar even=LTS scheme."
+      }
+    },
+    {
+      "type": "mistakes",
+      "items": [
+        {
+          "title": {
+            "ar": "اتباع درس قديم عن ‎.NET Framework أو ASP.NET (بدون Core)",
+            "en": "Following an old .NET Framework / classic ASP.NET tutorial"
+          },
+          "wrong": "Global.asax, Web.config, System.Web.Mvc, packages.config",
+          "right": "Program.cs, appsettings.json, Microsoft.AspNetCore.*, PackageReference",
+          "ar": "إذا رأيت هذه الملفات في درس فهو عن المنصة القديمة. ابحث عن «ASP.NET Core» وتأكد من رقم الإصدار.",
+          "en": "Those files mean the legacy stack."
+        },
+        {
+          "title": {
+            "ar": "استهداف netstandard2.1 وتوقع عمله على ‎.NET Framework",
+            "en": "Targeting netstandard2.1 for .NET Framework"
+          },
+          "wrong": "<TargetFramework>netstandard2.1</TargetFramework> <!-- used from net48 -->",
+          "right": "<TargetFramework>netstandard2.0</TargetFramework>",
+          "ar": "‎.NET Framework لا يدعم ‎.NET Standard 2.1 إطلاقاً. وهذه قاعدة ستطبقها في التمرين.",
+          "en": ".NET Framework never supports netstandard2.1."
+        },
+        {
+          "title": {
+            "ar": "البدء بإصدار STS يقترب من نهايته",
+            "en": "Starting on an STS version near end of life"
+          },
+          "wrong": "<TargetFramework>net9.0</TargetFramework> <!-- ends Nov 2026 -->",
+          "right": "<TargetFramework>net10.0</TargetFramework>",
+          "ar": "تحقق دائماً من صفحة سياسة الدعم الرسمية قبل اختيار الإصدار.",
+          "en": "Check the official support policy first."
+        }
+      ]
+    }
+  ],
+  "quiz": [
+    {
+      "question": {
+        "ar": "ما المنصة التي تبدأ بها مشروع ASP.NET Core جديداً اليوم؟",
+        "en": "Which platform for a new ASP.NET Core project today?"
+      },
+      "options": [
+        {
+          "ar": "‎.NET Framework 4.8.1",
+          "en": ".NET Framework 4.8.1"
+        },
+        {
+          "ar": "‎.NET Core 3.1",
+          "en": ".NET Core 3.1"
+        },
+        {
+          "ar": "‎.NET 10",
+          "en": ".NET 10"
+        },
+        {
+          "ar": "‎.NET Standard 2.1",
+          "en": ".NET Standard 2.1"
+        }
+      ],
+      "answer": 2,
+      "explanation": {
+        "ar": "‎.NET 10 هو إصدار LTS الحالي ومدعوم حتى نوفمبر 2028.",
+        "en": ".NET 10 is the current LTS."
+      }
+    },
+    {
+      "question": {
+        "ar": "ما الفرق بين `net48` و `net8.0`؟",
+        "en": "net48 vs net8.0?"
+      },
+      "options": [
+        {
+          "ar": "نفس الشيء",
+          "en": "Same thing"
+        },
+        {
+          "ar": "net48 هو ‎.NET Framework 4.8 و net8.0 هو ‎.NET 8 الحديث",
+          "en": "net48 is .NET Framework 4.8; net8.0 is modern .NET 8"
+        },
+        {
+          "ar": "net48 أحدث",
+          "en": "net48 is newer"
+        },
+        {
+          "ar": "net8.0 خاص بـ Windows",
+          "en": "net8.0 is Windows-only"
+        }
+      ],
+      "answer": 1,
+      "explanation": {
+        "ar": "النقطة في الرقم تميّز ‎.NET الحديث.",
+        "en": "The dot marks modern .NET."
+      }
+    },
+    {
+      "question": {
+        "ar": "كم سنة دعم يحصل عليه إصدار LTS؟",
+        "en": "How long is an LTS release supported?"
+      },
+      "options": [
+        {
+          "ar": "سنة",
+          "en": "1 year"
+        },
+        {
+          "ar": "18 شهراً",
+          "en": "18 months"
+        },
+        {
+          "ar": "3 سنوات",
+          "en": "3 years"
+        },
+        {
+          "ar": "10 سنوات",
+          "en": "10 years"
+        }
+      ],
+      "answer": 2,
+      "explanation": {
+        "ar": "LTS = 3 سنوات، و STS = 24 شهراً.",
+        "en": "LTS = 3 years; STS = 24 months."
+      }
+    },
+    {
+      "question": {
+        "ar": "لماذا لا يوجد ‎.NET 4؟",
+        "en": "Why is there no .NET 4?"
+      },
+      "options": [
+        {
+          "ar": "فشل الإصدار",
+          "en": "It failed"
+        },
+        {
+          "ar": "لتجنب الخلط مع ‎.NET Framework 4.x",
+          "en": "To avoid confusion with .NET Framework 4.x"
+        },
+        {
+          "ar": "رقم 4 محظور",
+          "en": "4 is banned"
+        },
+        {
+          "ar": "موجود لكنه نادر",
+          "en": "It exists but is rare"
+        }
+      ],
+      "answer": 1,
+      "explanation": {
+        "ar": "بعد ‎.NET Core 3.1 جاء ‎.NET 5 مباشرة.",
+        "en": "After Core 3.1 came .NET 5."
+      }
+    },
+    {
+      "question": {
+        "ar": "مكتبة يجب أن تعمل في تطبيق net48 قديم وتطبيق net10.0 جديد. ماذا تستهدف؟",
+        "en": "A library for both net48 and net10.0 apps: which target?"
+      },
+      "options": [
+        {
+          "ar": "net10.0",
+          "en": "net10.0"
+        },
+        {
+          "ar": "netstandard2.1",
+          "en": "netstandard2.1"
+        },
+        {
+          "ar": "netstandard2.0",
+          "en": "netstandard2.0"
+        },
+        {
+          "ar": "net48",
+          "en": "net48"
+        }
+      ],
+      "answer": 2,
+      "explanation": {
+        "ar": "netstandard2.0 يعمل على ‎.NET Framework 4.6.1+ وعلى كل إصدارات ‎.NET الحديث.",
+        "en": "netstandard2.0 runs on both."
+      }
+    }
+  ]
+}

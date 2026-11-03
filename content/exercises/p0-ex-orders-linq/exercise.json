@@ -1,0 +1,16 @@
+{
+  "id": "p0-ex-orders-linq",
+  "title": { "ar": "تقارير الطلبات بـ LINQ", "en": "Order Reports with LINQ" },
+  "kind": "exercise",
+  "difficulty": "medium",
+  "terms": ["linq", "lambda", "group-by", "deferred-execution", "ienumerable"],
+  "prompt": {
+    "ar": "لديك سجل `Order` جاهز. اكتب تقارير لوحة تحكم المتجر باستخدام [[linq]] (بدون حلقات for إن استطعت):\n\n1. `TotalRevenue(orders)`: مجموع كل المبالغ.\n2. `BigSpenders(orders, threshold)`: أسماء العملاء الذين **مجموع** مشترياتهم أكبر من threshold، مرتبة حسب المجموع تنازلياً، وعند التساوي أبجدياً.\n3. `RevenueByCategory(orders)`: قاموس `Dictionary<string, decimal>` من الفئة إلى مجموع مبيعاتها.\n4. `TopOrderIds(orders, n)`: معرّفات أكبر n طلبات حسب المبلغ (عند التساوي: الـ Id الأصغر أولاً).\n5. `AverageForMonth(orders, year, month)`: متوسط مبلغ الطلبات في شهر معيّن، أو 0 إذا لم توجد طلبات.\n\nفكّر: ماذا تفعل `Average()` مع قائمة فارغة؟",
+    "en": "Using LINQ, implement: `TotalRevenue`, `BigSpenders` (customers whose **total** spending exceeds the threshold, ordered by total desc then name), `RevenueByCategory`, `TopOrderIds` (ties: smaller Id first), and `AverageForMonth` (0 when there are no orders, think about what `Average()` does on an empty sequence)."
+  },
+  "hints": [
+    { "ar": "التجميع حسب العميل: `orders.GroupBy(o => o.Customer)` يعطيك مجموعات، لكل مجموعة `g.Key` (اسم العميل) و `g.Sum(o => o.Amount)`.", "en": "`orders.GroupBy(o => o.Customer)` gives groups with `g.Key` and `g.Sum(o => o.Amount)`." },
+    { "ar": "الترتيب المتعدد: `.OrderByDescending(x => x.Total).ThenBy(x => x.Name)`. والقاموس: `.ToDictionary(g => g.Key, g => g.Sum(o => o.Amount))`.", "en": "`.OrderByDescending(...).ThenBy(...)` and `.ToDictionary(g => g.Key, g => g.Sum(...))`." },
+    { "ar": "`Average()` على قائمة فارغة ترمي `InvalidOperationException`. فلتر أولاً بـ `Where(o => o.Date.Year == year && o.Date.Month == month)` ثم استخدم `DefaultIfEmpty()` قبل Average، أو تحقق بـ `Any()`.", "en": "`Average()` throws on empty sequences: check `Any()` or use `DefaultIfEmpty()`." }
+  ]
+}

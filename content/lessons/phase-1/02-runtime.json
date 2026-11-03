@@ -1,0 +1,371 @@
+{
+  "id": "p1-runtime",
+  "title": {
+    "ar": "الـ SDK والـ Runtime والـ CLR",
+    "en": "SDK, Runtime & the CLR"
+  },
+  "summary": {
+    "ar": "ماذا يحدث بين ضغطك على Run وظهور النتيجة: Roslyn ثم IL ثم JIT ثم كود الآلة، وجامع القمامة، ولماذا تحتاج IDisposable.",
+    "en": "What happens between Run and output: Roslyn → IL → JIT → machine code, the garbage collector, and why IDisposable exists."
+  },
+  "minutes": 30,
+  "terms": [
+    "roslyn",
+    "il",
+    "assembly",
+    "clr",
+    "jit",
+    "sdk",
+    "runtime",
+    "bcl",
+    "native-aot",
+    "garbage-collector",
+    "idisposable",
+    "using-statement"
+  ],
+  "exercises": [
+    "p1-ex-disposable"
+  ],
+  "sections": [
+    {
+      "type": "text",
+      "ar": "في PHP يقرأ المفسّر (Interpreter) ملف ‎.php ويشغّله مباشرة. في JavaScript يأخذ محرك V8 الكود ويترجمه أثناء التشغيل. أما ‎.NET فيعمل على **مرحلتين**:\n\n1. **وقت البناء** (`dotnet build`): المترجم [[roslyn]] يحوّل C# إلى [[il]] داخل ملف ‎.dll يسمى [[assembly]].\n2. **وقت التشغيل** (`dotnet run`): الـ [[clr]] يحمّل الـ ‎.dll، والـ [[jit]] يترجم IL إلى كود آلة حقيقي للمعالج الذي تعمل عليه، دالةً دالةً عند أول استدعاء.",
+      "en": "Two stages: Roslyn compiles C# to IL in a .dll at build time; at run time the CLR's JIT compiles IL to machine code."
+    },
+    {
+      "type": "visual",
+      "name": "build-pipeline",
+      "caption": {
+        "ar": "اضغط على كل مرحلة لترى ما يحدث للكود.",
+        "en": "Click each stage to see what happens to the code."
+      }
+    },
+    {
+      "type": "analogy",
+      "ar": "كتاب يُترجم إلى «لغة وسيطة» عالمية مثل الإسبرانتو (IL)، ثم في كل بلد يوجد مترجم فوري (JIT) يحوّله للغة المحلية لحظة القراءة. لهذا نفس الـ ‎.dll يعمل على Windows وعلى Linux، وعلى معالجات Intel و ARM.",
+      "en": "A book translated once into Esperanto (IL), then live-interpreted locally (JIT): one .dll runs on any OS and CPU."
+    },
+    {
+      "type": "heading",
+      "ar": "الـ SDK مقابل الـ Runtime",
+      "en": "SDK vs runtime"
+    },
+    {
+      "type": "table",
+      "headers": [
+        {
+          "ar": ""
+        },
+        {
+          "ar": "[[sdk]]",
+          "en": "SDK"
+        },
+        {
+          "ar": "[[runtime]]",
+          "en": "Runtime"
+        }
+      ],
+      "rows": [
+        [
+          "لمن",
+          "للمطوّر",
+          "للخادم الذي يشغّل التطبيق"
+        ],
+        [
+          "يحتوي",
+          "أداة dotnet، و MSBuild، و Roslyn، وعميل NuGet، **و** Runtime",
+          "الـ CLR ومكتبات [[bcl]] فقط"
+        ],
+        [
+          "يمكنه",
+          "إنشاء المشاريع وبناؤها واختبارها ونشرها",
+          "تشغيل ‎.dll جاهزة فقط"
+        ],
+        [
+          "في Docker",
+          "`mcr.microsoft.com/dotnet/sdk:10.0` (كبير)",
+          "`mcr.microsoft.com/dotnet/aspnet:10.0` (صغير)"
+        ]
+      ]
+    },
+    {
+      "type": "text",
+      "ar": "الـ Runtime نفسه مقسم إلى **أُطر مشتركة (Shared frameworks)**: `Microsoft.NETCore.App` للأساسيات، و `Microsoft.AspNetCore.App` لتطبيقات الويب، و `Microsoft.WindowsDesktop.App` لتطبيقات سطح المكتب. نفّذ `dotnet --list-runtimes` لتراها على جهازك.",
+      "en": "The runtime ships as shared frameworks: Microsoft.NETCore.App, Microsoft.AspNetCore.App, Microsoft.WindowsDesktop.App."
+    },
+    {
+      "type": "code",
+      "lang": "csharp",
+      "code": "// What you write (C#):\nstatic int Add(int a, int b) => a + b;\n\n// What Roslyn emits into the .dll (IL), you can inspect it with ILSpy or SharpLab.io:\n//   ldarg.0      // push a\n//   ldarg.1      // push b\n//   add          // pop both, push a + b\n//   ret          // return the top of the stack\n\n// What the JIT finally produces on x64 (machine code):\n//   lea eax, [rcx+rdx]\n//   ret",
+      "title": {
+        "ar": "نفس الدالة في ثلاث مراحل",
+        "en": "One method, three stages"
+      }
+    },
+    {
+      "type": "heading",
+      "ar": "JIT و Tiered compilation و Native AOT",
+      "en": "JIT, tiered compilation and Native AOT"
+    },
+    {
+      "type": "text",
+      "ar": "الـ JIT في ‎.NET الحديث ذكي: يترجم الدالة أول مرة بسرعة وبتحسينات قليلة (Tier 0) ليبدأ التطبيق بسرعة، ثم يراقب الدوال الأكثر استخداماً ويعيد ترجمتها بتحسينات قوية (Tier 1) مستفيداً من بيانات التشغيل الفعلية (Dynamic PGO). لهذا يصبح تطبيق ASP.NET Core أسرع بعد دقائق من تشغيله.\n\nوالبديل هو [[native-aot]]: ترجمة كل شيء إلى كود آلة وقت النشر. يبدأ التطبيق فوراً ولا يحتاج Runtime مثبّتاً، وهو مثالي للـ Serverless والحاويات الصغيرة، لكن مع قيود على Reflection الديناميكي.",
+      "en": "Tiered JIT starts fast then re-optimizes hot code; Native AOT compiles everything ahead of time."
+    },
+    {
+      "type": "heading",
+      "ar": "جامع القمامة و IDisposable",
+      "en": "The garbage collector and IDisposable"
+    },
+    {
+      "type": "text",
+      "ar": "في C# لا تحرر الذاكرة بنفسك أبداً. [[garbage-collector]] يراقب الكائنات في الـ Heap، وعندما لا يعود أي متغير يشير إلى كائن يحرر ذاكرته تلقائياً. ويقسّم الكائنات لثلاثة **أجيال**: الجيل 0 للكائنات الجديدة ويُفحص كثيراً لأن معظم الكائنات تموت صغيرة، والجيل 2 للكائنات طويلة العمر ويُفحص نادراً.\n\n**لكن** جامع القمامة يدير **الذاكرة فقط**. اتصال قاعدة البيانات، والملف المفتوح، ومنفذ الشبكة كلها موارد يجب إغلاقها **فوراً** وليس «عندما يقرر الـ GC». لهذا توجد [[idisposable]] و [[using-statement]].",
+      "en": "The GC frees memory automatically using generations, but not connections or files; that's what IDisposable and using are for."
+    },
+    {
+      "type": "annotated",
+      "lang": "csharp",
+      "title": {
+        "ar": "متى تحتاج using؟",
+        "en": "When do you need using?"
+      },
+      "code": "using var connection = new SqliteConnection(\"Data Source=shop.db\");\nconnection.Open();\n\nusing (var command = connection.CreateCommand())\n{\n    command.CommandText = \"SELECT COUNT(*) FROM Products\";\n    var count = command.ExecuteScalar();\n}\n\nvar products = new List<Product>();",
+      "notes": {
+        "1": {
+          "ar": "`using var`: سيُستدعى `connection.Dispose()` تلقائياً عند نهاية الدالة، حتى لو حدث استثناء.",
+          "en": "`using var`: Dispose at the end of the method, even on exceptions."
+        },
+        "4": {
+          "ar": "الصيغة الكلاسيكية: Dispose عند نهاية الأقواس.",
+          "en": "Classic form: disposed at the closing brace."
+        },
+        "8": {
+          "ar": "هنا أُغلق الـ command بالفعل.",
+          "en": "command is disposed here."
+        },
+        "10": {
+          "ar": "قائمة عادية: ذاكرة فقط، والـ GC يتولاها. لا تحتاج using.",
+          "en": "Plain memory: the GC handles it."
+        }
+      }
+    },
+    {
+      "type": "callout",
+      "kind": "info",
+      "ar": "في ASP.NET Core نادراً ما تكتب `Dispose` بنفسك: حاوية حقن الاعتماديات تستدعي Dispose تلقائياً للخدمات في نهاية الطلب. مثلاً الـ `DbContext` يُغلق بعد كل طلب HTTP. لكن عندما **تنشئ** شيئاً قابلاً للتحرير بـ `new` فأنت المسؤول عنه.",
+      "en": "In ASP.NET Core the DI container disposes services; if you `new` something disposable, it's yours to dispose."
+    },
+    {
+      "type": "source",
+      "path": "Backend/LearnBackend.Api/CodeRunner/CodeCompiler.cs",
+      "find": "var emit = compilation.Emit(pe, options: new EmitOptions(debugInformationFormat: DebugInformationFormat.Embedded));",
+      "context": 4,
+      "note": {
+        "ar": "هذا التطبيق يستدعي Roslyn برمجياً: كودك يُترجم إلى IL في الذاكرة. والـ PDB المدمج هو ما يسمح بإظهار رقم السطر عند حدوث استثناء.",
+        "en": "This app calls Roslyn in code: your code becomes IL in memory; the embedded PDB gives line numbers."
+      }
+    },
+    {
+      "type": "source",
+      "path": "Backend/LearnBackend.Api/CodeRunner/SandboxProcessRunner.cs",
+      "find": "var runtimeDir = RuntimeEnvironment.GetRuntimeDirectory();",
+      "context": 4,
+      "note": {
+        "ar": "البحث عن dotnet host: مجلد الـ Runtime يكون داخل `shared/Microsoft.NETCore.App/<version>`، وبجانبه الأُطر المشتركة الأخرى.",
+        "en": "Locating the dotnet host from the runtime directory."
+      }
+    },
+    {
+      "type": "source",
+      "path": "Backend/LearnBackend.Sandbox/Program.cs",
+      "find": "var assembly = Assembly.Load(assemblyBytes);",
+      "context": 6,
+      "note": {
+        "ar": "عامل العزل يحمّل الـ Assembly (الـ IL) من الذاكرة ويستدعي نقطة دخولها، فيقوم الـ CLR بعمل الـ JIT لكودك هنا.",
+        "en": "The sandbox loads your IL assembly from memory; the CLR JITs it here."
+      }
+    },
+    {
+      "type": "mistakes",
+      "items": [
+        {
+          "title": {
+            "ar": "تثبيت الـ SDK على خادم الإنتاج",
+            "en": "Installing the SDK on production servers"
+          },
+          "wrong": "FROM mcr.microsoft.com/dotnet/sdk:10.0  # final image",
+          "right": "FROM mcr.microsoft.com/dotnet/aspnet:10.0  # final image",
+          "ar": "الخادم يحتاج الـ Runtime فقط. الـ SDK أكبر بكثير ويزيد سطح الهجوم.",
+          "en": "Production needs only the runtime."
+        },
+        {
+          "title": {
+            "ar": "استدعاء GC.Collect() يدوياً",
+            "en": "Calling GC.Collect() manually"
+          },
+          "wrong": "GC.Collect(); // \"to free memory\"",
+          "right": "// let the GC decide; fix the leak instead",
+          "ar": "الـ GC أذكى منك في التوقيت، والاستدعاء اليدوي يبطئ التطبيق غالباً. إذا كانت الذاكرة تزيد فهناك مرجع يبقي الكائنات حية.",
+          "en": "Manual collection usually hurts; find the leak."
+        },
+        {
+          "title": {
+            "ar": "نسيان using مع اتصال أو Stream",
+            "en": "Forgetting using with a connection or stream"
+          },
+          "wrong": "var conn = new SqliteConnection(cs);\nconn.Open(); // never closed if an exception happens",
+          "right": "using var conn = new SqliteConnection(cs);\nconn.Open();",
+          "ar": "الاتصالات محدودة العدد (Connection pool)، وتسريبها يوقف التطبيق تحت الضغط.",
+          "en": "Leaked connections exhaust the pool."
+        }
+      ]
+    }
+  ],
+  "quiz": [
+    {
+      "question": {
+        "ar": "ما الذي يحتويه ملف ‎.dll الناتج عن dotnet build؟",
+        "en": "What's inside the .dll from dotnet build?"
+      },
+      "options": [
+        {
+          "ar": "كود آلة لمعالج Intel",
+          "en": "Intel machine code"
+        },
+        {
+          "ar": "IL وبيانات وصفية (Metadata)",
+          "en": "IL plus metadata"
+        },
+        {
+          "ar": "كود C# المصدري",
+          "en": "C# source"
+        },
+        {
+          "ar": "JavaScript",
+          "en": "JavaScript"
+        }
+      ],
+      "answer": 1,
+      "explanation": {
+        "ar": "IL مستقل عن المعالج، والـ JIT يحوّله وقت التشغيل.",
+        "en": "CPU-independent IL."
+      }
+    },
+    {
+      "question": {
+        "ar": "من يحوّل IL إلى كود آلة؟",
+        "en": "Who turns IL into machine code?"
+      },
+      "options": [
+        {
+          "ar": "Roslyn",
+          "en": "Roslyn"
+        },
+        {
+          "ar": "MSBuild",
+          "en": "MSBuild"
+        },
+        {
+          "ar": "JIT داخل الـ CLR",
+          "en": "The JIT inside the CLR"
+        },
+        {
+          "ar": "NuGet",
+          "en": "NuGet"
+        }
+      ],
+      "answer": 2,
+      "explanation": {
+        "ar": "Roslyn: من C# إلى IL. و JIT: من IL إلى كود الآلة.",
+        "en": "Roslyn: C#→IL; JIT: IL→native."
+      }
+    },
+    {
+      "question": {
+        "ar": "ماذا يحتاج خادم يشغّل تطبيق ASP.NET Core فقط (بدون Native AOT أو Self-contained)؟",
+        "en": "What does a server that only runs an ASP.NET Core app need?"
+      },
+      "options": [
+        {
+          "ar": "الـ SDK كاملاً",
+          "en": "The full SDK"
+        },
+        {
+          "ar": "ASP.NET Core Runtime",
+          "en": "The ASP.NET Core runtime"
+        },
+        {
+          "ar": "Visual Studio",
+          "en": "Visual Studio"
+        },
+        {
+          "ar": "لا شيء",
+          "en": "Nothing"
+        }
+      ],
+      "answer": 1,
+      "explanation": {
+        "ar": "Runtime يكفي للتشغيل، والـ SDK للتطوير.",
+        "en": "Runtime to run; SDK to build."
+      }
+    },
+    {
+      "question": {
+        "ar": "لماذا نحتاج IDisposable إذا كان هناك Garbage Collector؟",
+        "en": "Why IDisposable if there's a GC?"
+      },
+      "options": [
+        {
+          "ar": "الـ GC لا يعمل في ASP.NET Core",
+          "en": "The GC doesn't run in ASP.NET Core"
+        },
+        {
+          "ar": "الـ GC يحرر الذاكرة فقط، لا الاتصالات والملفات، ولا يعمل فوراً",
+          "en": "The GC frees memory only, not connections/files, and not immediately"
+        },
+        {
+          "ar": "لتسريع الـ JIT",
+          "en": "To speed up the JIT"
+        },
+        {
+          "ar": "لا نحتاجها",
+          "en": "We don't"
+        }
+      ],
+      "answer": 1,
+      "explanation": {
+        "ar": "Dispose يحرر الموارد غير المُدارة فوراً وبشكل محدد.",
+        "en": "Deterministic release of non-memory resources."
+      }
+    },
+    {
+      "question": {
+        "ar": "بأي ترتيب تُغلق `using var a` ثم `using var b`؟",
+        "en": "Disposal order of `using var a` then `using var b`?"
+      },
+      "options": [
+        {
+          "ar": "a ثم b",
+          "en": "a then b"
+        },
+        {
+          "ar": "b ثم a",
+          "en": "b then a"
+        },
+        {
+          "ar": "عشوائي",
+          "en": "Random"
+        },
+        {
+          "ar": "لا تُغلق",
+          "en": "Never"
+        }
+      ],
+      "answer": 1,
+      "explanation": {
+        "ar": "بالترتيب العكسي، مثل الـ Stack: آخر ما فُتح أول ما يُغلق.",
+        "en": "Reverse order, like a stack."
+      }
+    }
+  ]
+}

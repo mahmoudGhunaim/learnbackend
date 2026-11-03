@@ -1,0 +1,16 @@
+{
+  "id": "p0-project-library",
+  "title": { "ar": "مشروع المرحلة 0: نظام مكتبة", "en": "Phase 0 Project: Library System" },
+  "kind": "project",
+  "difficulty": "hard",
+  "terms": ["class", "record", "interface", "generics", "linq", "async-await", "nullable-reference-types", "dependency-injection"],
+  "prompt": {
+    "ar": "مشروع يجمع كل ما تعلمته في المرحلة 0. أنت تبني منطق مكتبة يمكن أن يصبح لاحقاً API حقيقياً.\n\nالأنواع `Genre` و `Book` و `Loan` و `IClock` و `IBookSource` جاهزة. أكمل الصنف `Library`:\n\n- `AddBook(book, copies = 1)`: يضيف نسخاً من كتاب (المعرّف ISBN). إضافة نفس الكتاب مرة أخرى تزيد النسخ. copies ≤ 0 → `ArgumentOutOfRangeException`.\n- `RegisterMember(memberId, name)`: تسجيل عضو. المعرّف المكرر → `InvalidOperationException`.\n- `Borrow(memberId, isbn)`: يرجع `Loan` مدته 14 يوماً من `clock.Today`. العضو أو الكتاب غير الموجود → `KeyNotFoundException`. لا نسخ متاحة → `InvalidOperationException`. العضو لديه 3 إعارات نشطة → `InvalidOperationException`.\n- `Return(memberId, isbn)`: يُنهي الإعارة ويرجع الغرامة: 0.50 لكل يوم تأخير. لا توجد إعارة → `InvalidOperationException`.\n- `Available(isbn)`: عدد النسخ المتاحة الآن (0 لكتاب غير معروف).\n- `Search(text)`: الكتب التي يحتوي عنوانها **أو** مؤلفها على النص (بدون اعتبار لحالة الأحرف)، مرتبة حسب العنوان.\n- `Overdue()`: الإعارات المتأخرة اليوم (DueOn قبل Today) مرتبة حسب DueOn.\n- `BooksPerGenre()`: `Dictionary<Genre, int>` بعدد العناوين (وليس النسخ) في كل تصنيف.\n- `ImportAsync(source)`: يجلب الكتب من مصدر غير متزامن ويضيف الصالحة منها فقط (ISBN وعنوان ليسا فارغين)، ويتجاهل الكتب الموجودة مسبقاً، ويرجع عدد الكتب المضافة.\n\nلاحظ: `Library` تستقبل `IClock` في الـ Constructor بدلاً من استخدام `DateTime.Now` مباشرة. هذا هو [[dependency-injection]]، ولهذا تستطيع الاختبارات التحكم في التاريخ!",
+    "en": "Combine everything from Phase 0 to implement `Library`: AddBook (copies add up), RegisterMember, Borrow (14-day loans, max 3 active loans, KeyNotFoundException/InvalidOperationException rules), Return (fine 0.50 per late day), Available, Search (title or author, case-insensitive, ordered by title), Overdue, BooksPerGenre (titles, not copies) and ImportAsync (skip invalid and existing books). The clock is injected through `IClock` so tests can control time."
+  },
+  "hints": [
+    { "ar": "الحالة الداخلية المقترحة: `Dictionary<string, Book> _books`، و `Dictionary<string, int> _copies`، و `Dictionary<string, string> _members`، و `List<Loan> _activeLoans`.", "en": "Suggested state: dictionaries for books, copies and members, plus a `List<Loan>` of active loans." },
+    { "ar": "المتاح = النسخ − عدد الإعارات النشطة لهذا الـ ISBN: `_copies.GetValueOrDefault(isbn) - _activeLoans.Count(l => l.Isbn == isbn)`. والبحث بدون حالة الأحرف: `title.Contains(text, StringComparison.OrdinalIgnoreCase)`.", "en": "Available = copies − active loans for that ISBN; use `StringComparison.OrdinalIgnoreCase` for search." },
+    { "ar": "أيام التأخير: `clock.Today.DayNumber - loan.DueOn.DayNumber` (إذا كانت موجبة). الغرامة `days * 0.50m`. و ImportAsync: `var books = await source.GetBooksAsync();` ثم foreach مع `string.IsNullOrWhiteSpace` و `_books.ContainsKey`.", "en": "Late days: `clock.Today.DayNumber - loan.DueOn.DayNumber`. In ImportAsync await the source, then validate each book." }
+  ]
+}

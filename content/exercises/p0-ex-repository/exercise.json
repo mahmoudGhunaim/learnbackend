@@ -1,0 +1,16 @@
+{
+  "id": "p0-ex-repository",
+  "title": { "ar": "مستودع عام في الذاكرة", "en": "Generic In-Memory Repository" },
+  "kind": "exercise",
+  "difficulty": "medium",
+  "terms": ["generics", "generic-constraint", "dictionary", "list", "func-delegate"],
+  "prompt": {
+    "ar": "ستبني نسخة مصغّرة من نمط [[repository-pattern]] الذي ستستخدمه لاحقاً مع EF Core. الصنف عام [[generics]] ويعمل مع أي كيان (Entity) يطبّق `IEntity`.\n\nأكمل `InMemoryRepository<T> where T : class, IEntity`:\n\n- `Add(T entity)`: إذا كان `entity.Id == 0` أعطه المعرّف التالي (1، 2، 3...). إذا كان له Id مسبقاً احتفظ به (والعدّاد التالي يجب أن يتجاوزه). إذا كان الـ Id موجوداً مسبقاً ارمِ `InvalidOperationException`. ترجع الكيان نفسه.\n- `GetById(int id)`: يرجع الكيان أو **null** إذا لم يوجد (لا ترمِ استثناء).\n- `GetAll()`: كل الكيانات مرتبة حسب Id.\n- `Remove(int id)`: يرجع true إذا حُذف، و false إذا لم يكن موجوداً.\n- `Count`: عدد العناصر.\n- `Find(Func<T, bool> predicate)`: العناصر المطابقة للشرط، مرتبة حسب Id.\n\nوأكمل الدالة العامة `CollectionHelpers.CountBy<T, TKey>` التي تعدّ العناصر حسب مفتاح.",
+    "en": "Build a mini generic repository: `InMemoryRepository<T> where T : class, IEntity` with `Add` (auto-increment Id when 0, keep explicit Ids, duplicate Id → `InvalidOperationException`), `GetById` (null when missing), `GetAll` (ordered by Id), `Remove` (bool), `Count`, `Find(Func<T,bool>)`. Also implement `CollectionHelpers.CountBy<T, TKey>`."
+  },
+  "hints": [
+    { "ar": "خزّن العناصر في `Dictionary<int, T>`: البحث بالمفتاح فيه سريع جداً O(1). واحتفظ بحقل `private int _nextId = 1;`.", "en": "Store items in a `Dictionary<int, T>` and keep a `_nextId` field." },
+    { "ar": "`_items[id]` ترمي `KeyNotFoundException` إذا لم يوجد المفتاح! استخدم `_items.TryGetValue(id, out var item) ? item : null` أو `_items.GetValueOrDefault(id)`.", "en": "`_items[id]` throws KeyNotFoundException; use `TryGetValue` or `GetValueOrDefault`." },
+    { "ar": "عند الإضافة بـ Id صريح: `_nextId = Math.Max(_nextId, entity.Id + 1);`. و CountBy: أنشئ `Dictionary<TKey, int>` ولكل عنصر `counts[key] = counts.GetValueOrDefault(key) + 1;`.", "en": "`_nextId = Math.Max(_nextId, entity.Id + 1);` and `counts[key] = counts.GetValueOrDefault(key) + 1;`." }
+  ]
+}

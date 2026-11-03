@@ -1,0 +1,336 @@
+{
+  "id": "p1-nuget",
+  "title": {
+    "ar": "NuGet والحزم",
+    "en": "NuGet & Packages"
+  },
+  "summary": {
+    "ar": "npm الخاص بـ ‎.NET: إضافة الحزم، وفهم أرقام الإصدارات والنطاقات، والاعتماديات المتعدية، وفحص الثغرات.",
+    "en": "The npm of .NET: adding packages, versions and ranges, transitive dependencies and vulnerability audits."
+  },
+  "minutes": 25,
+  "terms": [
+    "nuget",
+    "package-reference",
+    "bcl",
+    "semver",
+    "transitive-dependency",
+    "nuget-audit",
+    "central-package-management"
+  ],
+  "exercises": [
+    "p1-ex-semver"
+  ],
+  "sections": [
+    {
+      "type": "text",
+      "ar": "[[nuget]] هو مدير الحزم في ‎.NET، و nuget.org هو المستودع العام. إذا كنت تعرف npm أو Composer فالفكرة نفسها، مع ثلاثة فروق مهمة:\n\n1. **لا يوجد مجلد node_modules في المشروع.** الحزم تُنزّل مرة واحدة إلى مجلد عام على جهازك (`~/.nuget/packages`) وتُشارك بين كل المشاريع.\n2. **الحزم تُسجّل داخل ملف ‎.csproj نفسه** بعنصر [[package-reference]]، فلا يوجد package.json منفصل.\n3. **[[bcl]] كبيرة جداً**: JSON و HTTP والتشفير والمجموعات مدمجة، فتحتاج حزماً أقل بكثير مما في npm.",
+      "en": "NuGet is .NET's npm, with a global package cache instead of node_modules, PackageReference inside the .csproj, and a much bigger standard library."
+    },
+    {
+      "type": "compare",
+      "title": {
+        "ar": "إضافة حزمة",
+        "en": "Adding a package"
+      },
+      "items": [
+        {
+          "lang": "bash",
+          "label": "npm",
+          "code": "npm install express\n# → package.json + node_modules/ + package-lock.json"
+        },
+        {
+          "lang": "bash",
+          "label": "Composer",
+          "code": "composer require guzzlehttp/guzzle\n# → composer.json + vendor/ + composer.lock"
+        },
+        {
+          "lang": "bash",
+          "label": "NuGet",
+          "code": "dotnet add package Microsoft.EntityFrameworkCore.Sqlite\n# → a <PackageReference> line in the .csproj\n# → files in ~/.nuget/packages (shared cache)"
+        }
+      ]
+    },
+    {
+      "type": "source",
+      "path": "Backend/LearnBackend.Api/LearnBackend.Api.csproj",
+      "find": "<PackageReference Include=\"Microsoft.EntityFrameworkCore.Sqlite\"",
+      "context": 8,
+      "note": {
+        "ar": "الحزم التي يعتمد عليها هذا التطبيق: Roslyn لترجمة كودك، و EF Core مع SQLite لحفظ تقدمك.",
+        "en": "This app's packages: Roslyn and EF Core with SQLite."
+      }
+    },
+    {
+      "type": "heading",
+      "ar": "أرقام الإصدارات (SemVer)",
+      "en": "Version numbers (SemVer)"
+    },
+    {
+      "type": "text",
+      "ar": "حزم NuGet تتبع [[semver]]: `MAJOR.MINOR.PATCH`، مثل `10.0.2`.\n\n- **MAJOR**: تغيير يكسر التوافق، وكودك قد يحتاج تعديلاً.\n- **MINOR**: ميزات جديدة متوافقة.\n- **PATCH**: إصلاحات فقط.\n- **Prerelease**: `11.0.0-preview.3` أو `-rc.1`، نسخ تجريبية أقل ترتيباً من الإصدار الرسمي.\n\nحزم Microsoft الرسمية (`Microsoft.EntityFrameworkCore` و `Microsoft.AspNetCore.*`) تتبع رقم ‎.NET نفسه: مع net10.0 استخدم الإصدار 10.x.",
+      "en": "SemVer: MAJOR breaks, MINOR adds, PATCH fixes; Microsoft packages follow the .NET version."
+    },
+    {
+      "type": "heading",
+      "ar": "النطاقات: NuGet يختار الأقل وليس الأحدث!",
+      "en": "Ranges: NuGet picks the LOWEST, not the newest!"
+    },
+    {
+      "type": "text",
+      "ar": "هنا فرق كبير عن npm. عندما تكتب في npm `\"^4.18.0\"` يختار **أحدث** 4.x متاح. أما NuGet فعندما تكتب `Version=\"4.18.0\"` فهي تعني «4.18.0 **أو أحدث**»، ويختار **أقل** إصدار يحقق الشرط (Lowest applicable version). والنتيجة: البناء ثابت وقابل للتكرار حتى بدون ملف Lock.",
+      "en": "\"4.18.0\" means ≥ 4.18.0 and NuGet resolves the LOWEST applicable version, unlike npm's caret."
+    },
+    {
+      "type": "table",
+      "headers": [
+        {
+          "ar": "الصيغة",
+          "en": "Notation"
+        },
+        {
+          "ar": "المعنى",
+          "en": "Meaning"
+        }
+      ],
+      "rows": [
+        [
+          "`1.0`",
+          "1.0 أو أحدث (الحد الأدنى فقط). وهذا ما تكتبه 99% من الوقت"
+        ],
+        [
+          "`[1.0]`",
+          "1.0 بالضبط"
+        ],
+        [
+          "`[1.0,2.0)`",
+          "من 1.0 (شامل) حتى قبل 2.0. القوس `[` شامل، والقوس `)` مستثنٍ"
+        ],
+        [
+          "`(,2.0]`",
+          "حتى 2.0 شاملاً"
+        ],
+        [
+          "`(1.0,)`",
+          "أكبر من 1.0 تماماً"
+        ],
+        [
+          "`10.*`",
+          "Floating: أحدث 10.x. نادراً ما تُستخدم في الإنتاج"
+        ]
+      ]
+    },
+    {
+      "type": "analogy",
+      "ar": "الاعتماديات المتعدية ([[transitive-dependency]]) مثل وصفة طبخ: أنت اشتريت «خلطة كيك جاهزة» (حزمة) فقط، لكنها تحتوي طحيناً وسكراً وبيكنج باودر دون أن تشتريها بنفسك. وإذا اكتُشف أن نوع السكر فيها ملوث (ثغرة أمنية) فأنت متأثر رغم أنك لم تختره!",
+      "en": "Transitive dependencies are the ingredients inside a cake mix you bought."
+    },
+    {
+      "type": "code",
+      "lang": "bash",
+      "code": "dotnet add package Serilog.AspNetCore            # latest stable\ndotnet add package Serilog.AspNetCore --version 9.0.0\ndotnet remove package Serilog.AspNetCore\n\ndotnet restore                                   # download everything (build does this automatically)\ndotnet list package                              # direct packages\ndotnet list package --include-transitive         # + everything they pulled in\ndotnet list package --outdated                   # newer versions available?\ndotnet list package --vulnerable --include-transitive   # known security issues?",
+      "title": {
+        "ar": "أوامر NuGet اليومية",
+        "en": "Everyday NuGet commands"
+      }
+    },
+    {
+      "type": "callout",
+      "kind": "dotnet",
+      "ar": "**[[nuget-audit]]**: منذ ‎.NET 8 يفحص `dotnet restore` كل حزمك تلقائياً مقابل قاعدة بيانات الثغرات، ويظهر تحذيرات NU1901 إلى NU1904. لا تتجاهلها! وفي المشاريع الكبيرة تُستخدم [[central-package-management]] (ملف Directory.Packages.props) لتوحيد الإصدارات.",
+      "en": "NuGet Audit warns about vulnerable packages on restore; Central Package Management unifies versions."
+    },
+    {
+      "type": "source",
+      "path": "dotnet-tools.json",
+      "find": "\"dotnet-ef\"",
+      "context": 4,
+      "note": {
+        "ar": "أدوات ‎.NET أيضاً تأتي كحزم NuGet. هذا الملف يثبّت أداة dotnet-ef محلياً للمشروع، فيكفي أن يكتب أي مطور `dotnet tool restore`.",
+        "en": "Tools are NuGet packages too; this manifest pins dotnet-ef locally."
+      }
+    },
+    {
+      "type": "mistakes",
+      "items": [
+        {
+          "title": {
+            "ar": "خلط إصدارات حزم Microsoft",
+            "en": "Mixing Microsoft package versions"
+          },
+          "wrong": "<PackageReference Include=\"Microsoft.EntityFrameworkCore.Sqlite\" Version=\"8.0.0\" />\n<PackageReference Include=\"Microsoft.EntityFrameworkCore.Design\" Version=\"10.0.0\" />",
+          "right": "<!-- same major as each other and as your TargetFramework -->\nVersion=\"10.0.x\" for both",
+          "ar": "حزم العائلة الواحدة يجب أن تكون بنفس الإصدار الرئيسي، وإلا ستظهر أخطاء غريبة وقت التشغيل.",
+          "en": "Keep a package family on the same major."
+        },
+        {
+          "title": {
+            "ar": "إضافة حزمة لشيء موجود في الـ BCL",
+            "en": "Adding a package for something in the BCL"
+          },
+          "wrong": "dotnet add package Newtonsoft.Json   # just to parse JSON",
+          "right": "using System.Text.Json; // built in",
+          "ar": "System.Text.Json و HttpClient والتشفير وغيرها مدمجة. كل حزمة إضافية = سطح هجوم وتحديثات إضافية.",
+          "en": "Prefer built-ins."
+        },
+        {
+          "title": {
+            "ar": "رفع مجلدي bin و obj إلى Git",
+            "en": "Committing bin/ and obj/"
+          },
+          "wrong": "git add .  # includes bin/ obj/",
+          "right": "dotnet new gitignore",
+          "ar": "`dotnet new gitignore` ينشئ ملف ‎.gitignore جاهزاً لمشاريع ‎.NET.",
+          "en": "Use `dotnet new gitignore`."
+        }
+      ]
+    }
+  ],
+  "quiz": [
+    {
+      "question": {
+        "ar": "أين تُسجّل حزم NuGet في المشروع؟",
+        "en": "Where are NuGet packages declared?"
+      },
+      "options": [
+        {
+          "ar": "package.json",
+          "en": "package.json"
+        },
+        {
+          "ar": "packages.config دائماً",
+          "en": "Always packages.config"
+        },
+        {
+          "ar": "عناصر PackageReference داخل ‎.csproj",
+          "en": "PackageReference elements in the .csproj"
+        },
+        {
+          "ar": "NuGet.config فقط",
+          "en": "Only NuGet.config"
+        }
+      ],
+      "answer": 2,
+      "explanation": {
+        "ar": "المشاريع الحديثة تستخدم PackageReference داخل ملف المشروع.",
+        "en": "PackageReference in the .csproj."
+      }
+    },
+    {
+      "question": {
+        "ar": "`Version=\"2.1.0\"` في NuGet تعني:",
+        "en": "`Version=\"2.1.0\"` in NuGet means:"
+      },
+      "options": [
+        {
+          "ar": "2.1.0 بالضبط",
+          "en": "Exactly 2.1.0"
+        },
+        {
+          "ar": "2.1.0 أو أحدث، ويُختار أقل إصدار مناسب",
+          "en": "≥ 2.1.0, lowest applicable chosen"
+        },
+        {
+          "ar": "أحدث 2.x",
+          "en": "Latest 2.x"
+        },
+        {
+          "ar": "أي إصدار",
+          "en": "Any version"
+        }
+      ],
+      "answer": 1,
+      "explanation": {
+        "ar": "حد أدنى شامل، ونظام الحل يختار الأقل.",
+        "en": "Inclusive minimum, lowest resolved."
+      }
+    },
+    {
+      "question": {
+        "ar": "أي إصدار أحدث حسب SemVer؟",
+        "en": "Which is newer per SemVer?"
+      },
+      "options": [
+        {
+          "ar": "1.9.0",
+          "en": "1.9.0"
+        },
+        {
+          "ar": "1.10.0",
+          "en": "1.10.0"
+        },
+        {
+          "ar": "متساويان",
+          "en": "Equal"
+        },
+        {
+          "ar": "لا يمكن المقارنة",
+          "en": "Can't compare"
+        }
+      ],
+      "answer": 1,
+      "explanation": {
+        "ar": "المقارنة رقمية: 10 > 9، وليست أبجدية.",
+        "en": "Numeric comparison."
+      }
+    },
+    {
+      "question": {
+        "ar": "ما معنى النطاق `[1.0,2.0)`؟",
+        "en": "What does `[1.0,2.0)` mean?"
+      },
+      "options": [
+        {
+          "ar": "1.0 < v < 2.0",
+          "en": "1.0 < v < 2.0"
+        },
+        {
+          "ar": "1.0 ≤ v < 2.0",
+          "en": "1.0 ≤ v < 2.0"
+        },
+        {
+          "ar": "1.0 ≤ v ≤ 2.0",
+          "en": "1.0 ≤ v ≤ 2.0"
+        },
+        {
+          "ar": "v = 1.0 أو 2.0",
+          "en": "v is 1.0 or 2.0"
+        }
+      ],
+      "answer": 1,
+      "explanation": {
+        "ar": "القوس المربع شامل، والهلالي مستثنٍ.",
+        "en": "[ inclusive, ) exclusive."
+      }
+    },
+    {
+      "question": {
+        "ar": "أين تُخزّن ملفات الحزم بعد التنزيل؟",
+        "en": "Where are downloaded package files stored?"
+      },
+      "options": [
+        {
+          "ar": "في node_modules داخل المشروع",
+          "en": "node_modules in the project"
+        },
+        {
+          "ar": "في مجلد عام مشترك ~/.nuget/packages",
+          "en": "A shared global folder ~/.nuget/packages"
+        },
+        {
+          "ar": "داخل الـ ‎.dll",
+          "en": "Inside the .dll"
+        },
+        {
+          "ar": "لا تُخزن",
+          "en": "Not stored"
+        }
+      ],
+      "answer": 1,
+      "explanation": {
+        "ar": "مجلد الحزم العام يُشارك بين كل المشاريع.",
+        "en": "A global packages folder."
+      }
+    }
+  ]
+}

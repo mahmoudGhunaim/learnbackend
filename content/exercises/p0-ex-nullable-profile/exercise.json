@@ -1,0 +1,16 @@
+{
+  "id": "p0-ex-nullable-profile",
+  "title": { "ar": "ملف المستخدم والقيم الفارغة", "en": "User Profile & Nulls" },
+  "kind": "exercise",
+  "difficulty": "medium",
+  "terms": ["nullable-reference-types", "nullable-value-types", "null-conditional", "null-coalescing", "null-reference-exception"],
+  "prompt": {
+    "ar": "في تطبيقات الويب البيانات ناقصة دائماً: مستخدم بلا عنوان، أو عمر غير مُدخل. أكمل `ProfileFormatter` دون أن يحدث أي `NullReferenceException`، **ودون أي تحذير Nullable من المترجم** (التحذيرات ستظهر لك في المحرر):\n\n- `NameToShow(user)`: اسم العرض DisplayName إذا كان موجوداً وليس فارغاً أو مسافات فقط، وإلا UserName.\n- `CityOf(user)`: المدينة، أو `\"Unknown\"` إذا كان المستخدم null أو بلا عنوان أو المدينة فارغة.\n- `DescribeAge(user)`: `\"Age: 30\"` أو `\"Age: not set\"`.\n- `ParseAge(text)`: يحوّل النص لعدد، ويرجع `null` إذا كان النص null أو ليس رقماً أو خارج المدى 0 إلى 150.\n- `TotalKnownAge(users)`: مجموع الأعمار المعروفة، متجاهلاً المستخدمين الـ null والأعمار الـ null.",
+    "en": "Implement `ProfileFormatter` without any NullReferenceException and without nullable warnings: `NameToShow` (DisplayName unless null/blank, else UserName), `CityOf` (\"Unknown\" when anything is missing), `DescribeAge` (\"Age: 30\" / \"Age: not set\"), `ParseAge` (null for null/invalid/out of 0–150), `TotalKnownAge` (ignore null users and null ages)."
+  },
+  "hints": [
+    { "ar": "المعامل `?.` يتوقف ويرجع null إذا كان ما قبله null: `user?.Address?.City`. والمعامل `??` يعطي قيمة بديلة: `x ?? \"Unknown\"`.", "en": "`user?.Address?.City` stops at the first null; `??` supplies a fallback." },
+    { "ar": "`??` لا يكفي لـ NameToShow لأن `\"   \"` ليس null! استخدم `string.IsNullOrWhiteSpace(user.DisplayName) ? user.UserName : user.DisplayName`.", "en": "`??` doesn't treat \"   \" as missing; use `string.IsNullOrWhiteSpace`." },
+    { "ar": "`int.TryParse(text, out var age)` لا يرمي استثناء ويقبل null. وللمجموع: `users.Sum(u => u?.Age ?? 0)`. و `user.Age is int a ? $\"Age: {a}\" : \"Age: not set\"`.", "en": "`int.TryParse(text, out var age)`, `users.Sum(u => u?.Age ?? 0)`, and `user.Age is int a ? ... : ...`." }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "id": "p0-ex-bank-account",
+  "title": { "ar": "الحساب البنكي", "en": "Bank Account" },
+  "kind": "exercise",
+  "difficulty": "easy",
+  "terms": ["class", "constructor", "property", "encapsulation", "access-modifier", "static-member"],
+  "prompt": {
+    "ar": "صمّم الصنف `BankAccount` مع تطبيق مبدأ [[encapsulation]]: لا أحد يستطيع تغيير الرصيد مباشرة، فقط عبر الدوال.\n\n- Constructor: `BankAccount(string owner, decimal initialBalance = 0)`. إذا كان owner فارغاً أو مسافات ارمِ `ArgumentException`، وإذا كان الرصيد الابتدائي سالباً ارمِ `ArgumentOutOfRangeException`.\n- `Owner`: خاصية للقراءة فقط.\n- `Balance`: قراءة عامة، وكتابة **خاصة** (`private set`).\n- `Deposit(amount)` و `Withdraw(amount)`: المبلغ يجب أن يكون أكبر من صفر (وإلا `ArgumentOutOfRangeException`). السحب أكثر من الرصيد يرمي `InvalidOperationException`.\n- `TransferTo(BankAccount target, decimal amount)`: سحب من هذا الحساب وإيداع في الآخر، وإذا فشل السحب لا يتحرك أي مال.\n- `Transactions`: من النوع `IReadOnlyList<decimal>` وتحتوي كل العمليات (الإيداع موجب، السحب سالب). الرصيد الابتدائي ليس عملية.\n- `static int AccountsCreated`: عدد الحسابات التي أُنشئت، وهو [[static-member]] مشترك بين كل الكائنات.",
+    "en": "Design `BankAccount` applying encapsulation: nobody can change the balance directly, only through methods.\n\n- Constructor `BankAccount(string owner, decimal initialBalance = 0)`: blank owner → `ArgumentException`; negative balance → `ArgumentOutOfRangeException`.\n- `Owner`: read-only property. `Balance`: public get, **private set**.\n- `Deposit`/`Withdraw`: amount must be > 0 (`ArgumentOutOfRangeException`); withdrawing more than the balance → `InvalidOperationException`.\n- `TransferTo(target, amount)`: if the withdrawal fails, no money moves.\n- `Transactions`: an `IReadOnlyList<decimal>` (deposits positive, withdrawals negative).\n- `static int AccountsCreated`: how many accounts were created."
+  },
+  "hints": [
+    { "ar": "خاصية بقراءة عامة وكتابة خاصة: `public decimal Balance { get; private set; }`. وخاصية للقراءة فقط: `public string Owner { get; }` وتُسند داخل الـ Constructor.", "en": "`public decimal Balance { get; private set; }` and `public string Owner { get; }` assigned in the constructor." },
+    { "ar": "احتفظ بحقل خاص `private readonly List<decimal> _transactions = new();` واكشفه كـ `public IReadOnlyList<decimal> Transactions => _transactions.AsReadOnly();`. هكذا لا يستطيع المستدعي استدعاء Add.", "en": "Keep a private `List<decimal>` field and expose it as `IReadOnlyList<decimal>` (e.g. `_transactions.AsReadOnly()`)." },
+    { "ar": "`string.IsNullOrWhiteSpace(owner)` للتحقق من الاسم. العدّاد: `public static int AccountsCreated { get; private set; }` وزِده داخل الـ Constructor بعد نجاح التحقق. وفي TransferTo نفّذ Withdraw **أولاً** ثم Deposit.", "en": "Validate with `string.IsNullOrWhiteSpace`. Counter: `public static int AccountsCreated { get; private set; }`. In TransferTo call Withdraw **first**, then Deposit." }
+  ]
+}

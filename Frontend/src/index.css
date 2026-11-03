@@ -1,0 +1,238 @@
+@import 'tailwindcss';
+@import '@fontsource/ibm-plex-sans-arabic/400.css';
+@import '@fontsource/ibm-plex-sans-arabic/500.css';
+@import '@fontsource/ibm-plex-sans-arabic/600.css';
+@import '@fontsource/ibm-plex-sans-arabic/700.css';
+@import '@fontsource/jetbrains-mono/400.css';
+@import '@fontsource/jetbrains-mono/600.css';
+
+/* Dark mode is driven by the .dark class on <html> (toggle in the top bar). */
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --bg: #f6f6fa;
+  --surface: #ffffff;
+  --surface-2: #f0f0f6;
+  --surface-3: #e7e7f0;
+  --line: #e1e1ea;
+  --text: #191b26;
+  --muted: #5d6273;
+  --accent: #6440f0;
+  --accent-2: #8b6cff;
+  --accent-soft: #ede8ff;
+  --ok: #138a3e;
+  --ok-soft: #e3f6ea;
+  --bad: #cf2d2d;
+  --bad-soft: #fde8e8;
+  --warn: #b86e00;
+  --warn-soft: #fff3dc;
+  --info: #1f6fd1;
+  --info-soft: #e5f0ff;
+  --code-bg: #f7f7fb;
+  --code-text: #24292f;
+  --hl-keyword: #cf222e;
+  --hl-type: #8250df;
+  --hl-string: #0a3069;
+  --hl-number: #0550ae;
+  --hl-comment: #6e7781;
+  --hl-function: #6639ba;
+  --hl-attr: #116329;
+}
+
+.dark {
+  --bg: #0c0f16;
+  --surface: #131823;
+  --surface-2: #1a2030;
+  --surface-3: #232a3d;
+  --line: #262e42;
+  --text: #e6e8f0;
+  --muted: #9198ad;
+  --accent: #8f74ff;
+  --accent-2: #b3a1ff;
+  --accent-soft: #241d45;
+  --ok: #3ccf74;
+  --ok-soft: #12291c;
+  --bad: #ff6b6b;
+  --bad-soft: #321718;
+  --warn: #f2b14b;
+  --warn-soft: #2f2412;
+  --info: #5aa7ff;
+  --info-soft: #132236;
+  --code-bg: #0f131c;
+  --code-text: #d6dae6;
+  --hl-keyword: #ff7b9c;
+  --hl-type: #c0a6ff;
+  --hl-string: #a5d6ff;
+  --hl-number: #79c0ff;
+  --hl-comment: #6d768c;
+  --hl-function: #d2a8ff;
+  --hl-attr: #7ee2a8;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-line: var(--line);
+  --color-text: var(--text);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-2: var(--accent-2);
+  --color-accent-soft: var(--accent-soft);
+  --color-ok: var(--ok);
+  --color-ok-soft: var(--ok-soft);
+  --color-bad: var(--bad);
+  --color-bad-soft: var(--bad-soft);
+  --color-warn: var(--warn);
+  --color-warn-soft: var(--warn-soft);
+  --color-info: var(--info);
+  --color-info-soft: var(--info-soft);
+  --color-code: var(--code-bg);
+  --font-sans: 'IBM Plex Sans Arabic', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'Cascadia Code', Consolas, monospace;
+}
+
+html {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  min-height: 100dvh;
+  line-height: 1.75;
+}
+
+/* Arabic reads better slightly larger with generous line height. */
+html[lang='ar'] body {
+  font-size: 16.5px;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--accent) 35%, transparent);
+}
+
+/* Grid items default to min-width:auto, so a long code line would widen its column past
+   the phone screen. Let them shrink; code blocks scroll horizontally instead. */
+.grid > * {
+  min-width: 0;
+}
+
+/* Code is always left-to-right, whatever the UI direction. */
+code,
+pre,
+.code {
+  font-family: var(--font-mono);
+  /* No ligatures: learners must see "=>" and "!=" exactly as they type them. */
+  font-variant-ligatures: none;
+  direction: ltr;
+  unicode-bidi: isolate;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* Inline code inside prose */
+.prose-code {
+  font-family: var(--font-mono);
+  font-size: 0.86em;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 0.05em 0.35em;
+  direction: ltr;
+  unicode-bidi: isolate;
+  white-space: break-spaces;
+}
+
+/* highlight.js tokens, themed by our CSS variables (works in light and dark). */
+.hljs {
+  color: var(--code-text);
+}
+.hljs-keyword,
+.hljs-built_in.hljs-keyword,
+.hljs-selector-tag,
+.hljs-meta .hljs-keyword {
+  color: var(--hl-keyword);
+}
+.hljs-type,
+.hljs-title.class_,
+.hljs-built_in {
+  color: var(--hl-type);
+}
+.hljs-string,
+.hljs-regexp,
+.hljs-template-variable,
+.hljs-subst {
+  color: var(--hl-string);
+}
+.hljs-number,
+.hljs-literal {
+  color: var(--hl-number);
+}
+.hljs-comment,
+.hljs-quote,
+.hljs-meta {
+  color: var(--hl-comment);
+  font-style: italic;
+}
+.hljs-title.function_,
+.hljs-title {
+  color: var(--hl-function);
+}
+.hljs-attr,
+.hljs-attribute,
+.hljs-tag,
+.hljs-name,
+.hljs-variable,
+.hljs-params {
+  color: var(--hl-attr);
+}
+
+/* Slim scrollbars */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--surface-3) transparent;
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.animate-fade-up {
+  animation: fade-up 0.25s ease-out both;
+}
+
+@keyframes pulse-ring {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 45%, transparent);
+  }
+  100% {
+    box-shadow: 0 0 0 10px transparent;
+  }
+}
+.animate-pulse-ring {
+  animation: pulse-ring 1s ease-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

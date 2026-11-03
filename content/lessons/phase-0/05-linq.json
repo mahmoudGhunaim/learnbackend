@@ -1,0 +1,429 @@
+{
+  "id": "p0-linq",
+  "title": {
+    "ar": "LINQ ولامدا",
+    "en": "LINQ & Lambdas"
+  },
+  "summary": {
+    "ar": "Where و Select و GroupBy والتنفيذ المؤجل: نفس فكرة filter و map في JavaScript، لكنها أقوى وتتحول لاحقاً إلى SQL.",
+    "en": "Where, Select, GroupBy and deferred execution: like JS filter/map, but lazier, and later translated to SQL."
+  },
+  "minutes": 35,
+  "terms": [
+    "linq",
+    "deferred-execution",
+    "lambda",
+    "func-delegate",
+    "extension-method",
+    "ienumerable",
+    "group-by",
+    "iqueryable"
+  ],
+  "exercises": [
+    "p0-ex-orders-linq"
+  ],
+  "sections": [
+    {
+      "type": "text",
+      "ar": "إذا كنت تكتب `users.filter(u => u.active).map(u => u.name)` في JavaScript فأنت تعرف روح [[linq]]. في C# نفس السطر:\n\n`users.Where(u => u.Active).Select(u => u.Name)`\n\nلكن LINQ أوسع بكثير: ترتيب، وتجميع، وربط بين مجموعتين (Join)، وإحصاءات، والأهم أنها **نفس الصيغة** التي ستكتب بها استعلامات قاعدة البيانات في EF Core، حيث تتحول إلى SQL تلقائياً.",
+      "en": "LINQ is like JS array methods, but broader, and the same syntax becomes SQL with EF Core."
+    },
+    {
+      "type": "analogy",
+      "ar": "LINQ مثل خط إنتاج في مصنع: الطلبات تمر على محطة «الفلترة» ثم محطة «التحويل» ثم «الترتيب». والمهم أن خط الإنتاج **لا يبدأ بالعمل** حتى يطلب أحد المنتج النهائي (`ToList()` أو `foreach`). تصميم الخط وحده لا يحرك شيئاً، وهذا هو [[deferred-execution]].",
+      "en": "A production line that only starts when someone asks for the final product."
+    },
+    {
+      "type": "compare",
+      "title": {
+        "ar": "نفس الاستعلام في JavaScript و PHP و C#",
+        "en": "Same query in JS, PHP and C#"
+      },
+      "items": [
+        {
+          "lang": "javascript",
+          "label": "JavaScript",
+          "code": "const result = orders\n  .filter(o => o.amount > 100)\n  .sort((a, b) => b.amount - a.amount)\n  .map(o => o.customer)\n  .slice(0, 3);"
+        },
+        {
+          "lang": "php",
+          "label": "PHP (Laravel Collection)",
+          "code": "$result = collect($orders)\n    ->filter(fn($o) => $o->amount > 100)\n    ->sortByDesc('amount')\n    ->pluck('customer')\n    ->take(3);"
+        },
+        {
+          "lang": "csharp",
+          "label": "C# (LINQ)",
+          "code": "var result = orders\n    .Where(o => o.Amount > 100)\n    .OrderByDescending(o => o.Amount)\n    .Select(o => o.Customer)\n    .Take(3)\n    .ToList();"
+        }
+      ]
+    },
+    {
+      "type": "heading",
+      "ar": "لامدا والمفوَّضات",
+      "en": "Lambdas and delegates"
+    },
+    {
+      "type": "text",
+      "ar": "`o => o.Amount > 100` هو [[lambda]]: دالة صغيرة بلا اسم، مثل Arrow function. ونوعها في C# هو [[func-delegate]]: `Func<Order, bool>` يعني «دالة تأخذ Order وترجع bool».\n\nوكل دوال LINQ هي [[extension-method]] على [[ienumerable]]، لهذا تعمل على `List` و المصفوفات و `Dictionary` و `HashSet` وأي شيء يمكن المرور عليه بـ foreach.",
+      "en": "Lambdas are typed as Func/Action delegates; LINQ operators are extension methods on IEnumerable<T>."
+    },
+    {
+      "type": "table",
+      "headers": [
+        {
+          "ar": "LINQ",
+          "en": "LINQ"
+        },
+        {
+          "ar": "JavaScript",
+          "en": "JavaScript"
+        },
+        {
+          "ar": "ماذا تفعل",
+          "en": "What it does"
+        }
+      ],
+      "rows": [
+        [
+          "`Where`",
+          "`filter`",
+          "تصفية"
+        ],
+        [
+          "`Select`",
+          "`map`",
+          "تحويل كل عنصر"
+        ],
+        [
+          "`OrderBy` / `ThenBy`",
+          "`sort`",
+          "ترتيب (ولا تعدّل المصدر!)"
+        ],
+        [
+          "`First` / `FirstOrDefault`",
+          "`find`",
+          "أول عنصر (الأولى ترمي استثناء إن لم يوجد)"
+        ],
+        [
+          "`Any` / `All`",
+          "`some` / `every`",
+          "فحص شرط"
+        ],
+        [
+          "`Sum` / `Average` / `Max` / `Count`",
+          "`reduce`",
+          "إحصاءات جاهزة"
+        ],
+        [
+          "`GroupBy`",
+          "`Object.groupBy`",
+          "تجميع حسب مفتاح"
+        ],
+        [
+          "`SelectMany`",
+          "`flatMap`",
+          "تسطيح قوائم داخل قوائم"
+        ],
+        [
+          "`Distinct` / `Take` / `Skip`",
+          "`new Set` / `slice`",
+          "إزالة التكرار وتقسيم الصفحات (Paging)"
+        ],
+        [
+          "`ToList` / `ToDictionary`",
+          "(لا يوجد)",
+          "تنفيذ الاستعلام فوراً وحفظ النتيجة"
+        ]
+      ]
+    },
+    {
+      "type": "heading",
+      "ar": "التنفيذ المؤجل: الفكرة التي يخطئ فيها الجميع",
+      "en": "Deferred execution: the thing everyone gets wrong"
+    },
+    {
+      "type": "text",
+      "ar": "في JavaScript كل `filter` ينفّذ فوراً وينتج مصفوفة جديدة. في LINQ، `Where` و `Select` **لا تنفذ شيئاً**. هي تبني «وصفة»، والوصفة تُنفَّذ عند المرور عليها. والنتائج:\n\n- إذا مررت على الاستعلام مرتين يُنفَّذ **مرتين**.\n- إذا تغيّر المصدر بين بناء الاستعلام وتنفيذه، ترى البيانات الجديدة.\n- `ToList()` تنفّذ مرة واحدة وتحفظ النتيجة.\n\nهذا أخطر ما يكون مع قواعد البيانات: كل مرور = استعلام SQL جديد للخادم!",
+      "en": "Where/Select build a recipe that runs when enumerated, every time it's enumerated."
+    },
+    {
+      "type": "visual",
+      "name": "linq-pipeline",
+      "caption": {
+        "ar": "شاهد العناصر تمر عبر خط LINQ واحداً واحداً، وجرّب الفرق عند إضافة ToList().",
+        "en": "Watch items flow one by one through the LINQ pipeline."
+      }
+    },
+    {
+      "type": "annotated",
+      "lang": "csharp",
+      "title": {
+        "ar": "التنفيذ المؤجل خطوة بخطوة",
+        "en": "Deferred execution step by step"
+      },
+      "code": "var numbers = new List<int> { 1, 2, 3, 4 };\nvar calls = 0;\n\nvar evens = numbers.Where(n => { calls++; return n % 2 == 0; });\nConsole.WriteLine(calls);\n\nnumbers.Add(6);\nConsole.WriteLine(evens.Count());\nConsole.WriteLine(evens.Count());\nConsole.WriteLine(calls);\n\nvar snapshot = evens.ToList();\nnumbers.Add(8);\nConsole.WriteLine(snapshot.Count);",
+      "notes": {
+        "4": {
+          "ar": "نبني الاستعلام فقط. اللامدا لم تُستدعَ ولا مرة بعد.",
+          "en": "Builds the query; the lambda hasn't run."
+        },
+        "5": {
+          "ar": "يطبع 0: لا تنفيذ حتى الآن.",
+          "en": "Prints 0."
+        },
+        "7": {
+          "ar": "نعدّل المصدر **بعد** بناء الاستعلام.",
+          "en": "Mutates the source after building the query."
+        },
+        "8": {
+          "ar": "Count() تنفّذ الاستعلام: تمر على 5 عناصر وتجد 3 أرقام زوجية، ومنها الرقم 6 الجديد!",
+          "en": "Runs the query: sees the new 6 → 3."
+        },
+        "9": {
+          "ar": "تنفيذ ثانٍ كامل من البداية.",
+          "en": "A second full execution."
+        },
+        "10": {
+          "ar": "يطبع 10: مرتان × 5 عناصر.",
+          "en": "Prints 10: 2 runs × 5 items."
+        },
+        "12": {
+          "ar": "ToList() تنفّذ مرة وتحفظ نسخة ثابتة.",
+          "en": "ToList runs once and stores the result."
+        },
+        "14": {
+          "ar": "يطبع 3: النسخة المحفوظة لا تتأثر بإضافة 8.",
+          "en": "Prints 3: the snapshot doesn't change."
+        }
+      }
+    },
+    {
+      "type": "code",
+      "lang": "csharp",
+      "code": "var orders = new List<Order>\n{\n    new(\"Sara\", \"Books\", 40m), new(\"Omar\", \"Tech\", 300m),\n    new(\"Sara\", \"Tech\", 120m), new(\"Lina\", \"Books\", 60m),\n};\n\n// GroupBy: total per customer, biggest first\nvar totals = orders\n    .GroupBy(o => o.Customer)\n    .Select(g => new { Customer = g.Key, Total = g.Sum(o => o.Amount), Count = g.Count() })\n    .OrderByDescending(x => x.Total);\n\nforeach (var t in totals)\n    Console.WriteLine($\"{t.Customer}: {t.Total} ({t.Count} orders)\");\n\n// Query syntax: the same thing, SQL-like (less common in modern code)\nvar books = from o in orders where o.Category == \"Books\" orderby o.Amount select o.Customer;\nConsole.WriteLine(string.Join(\", \", books));\n\nrecord Order(string Customer, string Category, decimal Amount);",
+      "title": {
+        "ar": "GroupBy و Query syntax، جرّبه",
+        "en": "GroupBy and query syntax: try it"
+      },
+      "runnable": true
+    },
+    {
+      "type": "text",
+      "ar": "[[group-by]] يرجع مجموعات، لكل مجموعة `Key` والعناصر داخلها. و `new { ... }` ينشئ **نوعاً مجهول الاسم** (Anonymous type)، مفيد داخل الاستعلامات.\n\nوفي EF Core ستعمل LINQ على [[iqueryable]] بدلاً من IEnumerable: نفس الكود، لكن بدلاً من تنفيذه في الذاكرة يُترجم إلى `SELECT ... WHERE ... GROUP BY` ويُنفَّذ في قاعدة البيانات.",
+      "en": "GroupBy returns groups with a Key; with EF Core the same LINQ on IQueryable becomes SQL."
+    },
+    {
+      "type": "source",
+      "path": "Backend/LearnBackend.Api/Controllers/FlashcardsController.cs",
+      "find": ".OrderBy(r => r.EaseFactor)",
+      "context": 5,
+      "note": {
+        "ar": "LINQ حقيقي في هذا التطبيق: بطاقات المراجعة المستحقة، الأضعف أولاً (أقل Ease factor)، ثم الأقدم استحقاقاً.",
+        "en": "Real LINQ here: due flashcards, weakest first, then oldest due."
+      }
+    },
+    {
+      "type": "source",
+      "path": "Backend/LearnBackend.Api/Controllers/DashboardController.cs",
+      "find": "var weak = reviews",
+      "context": 7,
+      "note": {
+        "ar": "حساب «المصطلحات الضعيفة» في لوحة التحكم بسلسلة Where ثم OrderByDescending ثم Take ثم Select.",
+        "en": "The dashboard's weak terms: Where → OrderByDescending → Take → Select."
+      }
+    },
+    {
+      "type": "mistakes",
+      "items": [
+        {
+          "title": {
+            "ar": "المرور على الاستعلام عدة مرات",
+            "en": "Enumerating a query multiple times"
+          },
+          "wrong": "var active = users.Where(u => IsActive(u));\nif (active.Any()) Console.WriteLine(active.Count()); // runs twice",
+          "right": "var active = users.Where(u => IsActive(u)).ToList();",
+          "ar": "كل Any و Count و foreach تعيد التنفيذ. مع قاعدة البيانات = عدة استعلامات SQL.",
+          "en": "Each enumeration re-runs the query."
+        },
+        {
+          "title": {
+            "ar": "First بدلاً من FirstOrDefault",
+            "en": "First instead of FirstOrDefault"
+          },
+          "wrong": "var user = users.First(u => u.Email == email); // InvalidOperationException if none",
+          "right": "var user = users.FirstOrDefault(u => u.Email == email);\nif (user is null) return NotFound();",
+          "ar": "First ترمي استثناء إذا لم يوجد عنصر. استخدمها فقط عندما يكون وجوده مضموناً.",
+          "en": "First throws when nothing matches."
+        },
+        {
+          "title": {
+            "ar": "Average على مجموعة فارغة",
+            "en": "Average on an empty sequence"
+          },
+          "wrong": "var avg = orders.Where(o => o.Month == 13).Average(o => o.Amount); // throws",
+          "right": "var list = orders.Where(...).ToList();\nvar avg = list.Count == 0 ? 0 : list.Average(o => o.Amount);",
+          "ar": "Average و Max و Min ترمي InvalidOperationException على مجموعة فارغة من غير الـ Nullable.",
+          "en": "Average/Max/Min throw on empty sequences."
+        },
+        {
+          "title": {
+            "ar": "توقع أن OrderBy ترتب القائمة نفسها",
+            "en": "Expecting OrderBy to sort in place"
+          },
+          "wrong": "names.OrderBy(n => n); // result ignored, names unchanged",
+          "right": "names = names.OrderBy(n => n).ToList(); // or names.Sort();",
+          "ar": "LINQ لا تعدّل المصدر أبداً، بل ترجع تسلسلاً جديداً.",
+          "en": "LINQ never mutates the source."
+        }
+      ]
+    }
+  ],
+  "quiz": [
+    {
+      "question": {
+        "ar": "ما مقابل `filter` و `map` في LINQ؟",
+        "en": "LINQ equivalents of filter and map?"
+      },
+      "options": [
+        {
+          "ar": "Filter و Map",
+          "en": "Filter and Map"
+        },
+        {
+          "ar": "Where و Select",
+          "en": "Where and Select"
+        },
+        {
+          "ar": "Find و ForEach",
+          "en": "Find and ForEach"
+        },
+        {
+          "ar": "Take و Skip",
+          "en": "Take and Skip"
+        }
+      ],
+      "answer": 1,
+      "explanation": {
+        "ar": "Where تصفّي، و Select تحوّل.",
+        "en": "Where filters, Select projects."
+      }
+    },
+    {
+      "question": {
+        "ar": "كم مرة تُستدعى اللامدا؟",
+        "en": "How many times does the lambda run?"
+      },
+      "options": [
+        {
+          "ar": "0",
+          "en": "0"
+        },
+        {
+          "ar": "3",
+          "en": "3"
+        },
+        {
+          "ar": "6",
+          "en": "6"
+        },
+        {
+          "ar": "1",
+          "en": "1"
+        }
+      ],
+      "answer": 2,
+      "explanation": {
+        "ar": "استعلام مؤجل مُرّ عليه مرتين (Count ثم ToList)، كل مرة على 3 عناصر.",
+        "en": "Deferred: enumerated twice × 3 items."
+      },
+      "code": "var calls = 0;\nvar q = new[] { 1, 2, 3 }.Where(x => { calls++; return true; });\nq.Count();\nq.ToList();\nConsole.WriteLine(calls);"
+    },
+    {
+      "question": {
+        "ar": "ماذا تفعل `ToList()`؟",
+        "en": "What does ToList() do?"
+      },
+      "options": [
+        {
+          "ar": "لا شيء",
+          "en": "Nothing"
+        },
+        {
+          "ar": "تنفذ الاستعلام فوراً وتحفظ النتيجة في قائمة",
+          "en": "Runs the query now and stores the results"
+        },
+        {
+          "ar": "تحول القائمة إلى استعلام مؤجل",
+          "en": "Makes it deferred"
+        },
+        {
+          "ar": "ترتب العناصر",
+          "en": "Sorts"
+        }
+      ],
+      "answer": 1,
+      "explanation": {
+        "ar": "ToList و ToArray و Count و First تنفّذ فوراً.",
+        "en": "Materializes the query."
+      }
+    },
+    {
+      "question": {
+        "ar": "لماذا `users.First(u => u.Id == id)` خطيرة في API؟",
+        "en": "Why is `First` risky in an API?"
+      },
+      "options": [
+        {
+          "ar": "بطيئة",
+          "en": "Slow"
+        },
+        {
+          "ar": "ترمي استثناء إذا لم يوجد المستخدم فينتج خطأ 500 بدل 404",
+          "en": "Throws if missing → 500 instead of 404"
+        },
+        {
+          "ar": "لا تعمل مع Lambda",
+          "en": "Doesn't accept lambdas"
+        },
+        {
+          "ar": "ترجع أول مستخدم دائماً",
+          "en": "Always returns the first user"
+        }
+      ],
+      "answer": 1,
+      "explanation": {
+        "ar": "استخدم FirstOrDefault ثم أرجع NotFound إذا كانت النتيجة null.",
+        "en": "Use FirstOrDefault and return 404."
+      }
+    },
+    {
+      "question": {
+        "ar": "ماذا يرجع `GroupBy(o => o.Customer)`؟",
+        "en": "What does GroupBy(o => o.Customer) return?"
+      },
+      "options": [
+        {
+          "ar": "قائمة أسماء العملاء",
+          "en": "A list of names"
+        },
+        {
+          "ar": "مجموعات، لكل منها Key وعناصرها",
+          "en": "Groups, each with a Key and its items"
+        },
+        {
+          "ar": "قاموساً",
+          "en": "A Dictionary"
+        },
+        {
+          "ar": "عدد العملاء",
+          "en": "The customer count"
+        }
+      ],
+      "answer": 1,
+      "explanation": {
+        "ar": "IEnumerable<IGrouping<TKey, T>>: كل مجموعة لها Key وتحتوي العناصر.",
+        "en": "IGrouping with Key and elements."
+      }
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "id": "p0-ex-shapes",
+  "title": { "ar": "الأشكال الهندسية", "en": "Shapes" },
+  "kind": "exercise",
+  "difficulty": "medium",
+  "terms": ["interface", "inheritance", "polymorphism", "virtual-override", "abstract-class"],
+  "prompt": {
+    "ar": "الواجهة `IShape` والصنف `Circle` جاهزان كمثال. أكمل الباقي:\n\n- `Rectangle(double width, double height)` يطبّق `IShape`: الاسم `\"Rectangle\"`، المساحة width × height، والمحيط 2 × (width + height). الأبعاد يجب أن تكون أكبر من صفر وإلا `ArgumentOutOfRangeException`.\n- `Name` في Rectangle يجب أن تكون `virtual` حتى يغيّرها الأبناء.\n- `Square(double side)` **يرث** من Rectangle (المربع مستطيل أضلاعه متساوية) ويجعل الاسم `\"Square\"` باستخدام `override`.\n- `ToString()` في Rectangle (وبالتالي Square) ترجع مثلاً `\"Rectangle 2x3\"` وللمربع `\"Square 2x2\"`.\n- `ShapeTools.TotalArea(shapes)`: مجموع المساحات.\n- `ShapeTools.Largest(shapes)`: الشكل الأكبر مساحة. القائمة الفارغة ترمي `InvalidOperationException`.\n\nهذا تمرين عن [[polymorphism]]: الدوال في ShapeTools لا تعرف ولا تهتم إن كان الشكل دائرة أو مربعاً.",
+    "en": "`IShape` and `Circle` are given. Implement `Rectangle` (virtual `Name` = \"Rectangle\", positive dimensions), `Square : Rectangle` overriding `Name` to \"Square\", `ToString()` like \"Rectangle 2x3\", and `ShapeTools.TotalArea` / `ShapeTools.Largest` (empty → `InvalidOperationException`)."
+  },
+  "hints": [
+    { "ar": "`public class Rectangle : IShape` ثم `public virtual string Name => \"Rectangle\";`. وفي المربع: `public class Square : Rectangle` مع Constructor يستدعي الأب: `public Square(double side) : base(side, side) { }`.", "en": "`public class Square : Rectangle` with `public Square(double side) : base(side, side) { }`." },
+    { "ar": "في Square اكتب `public override string Name => \"Square\";` وليس `new`. الكلمة `new` تُخفي الخاصية فقط عندما يكون نوع المتغير Square، لكن عبر IShape ستظهر \"Rectangle\"!", "en": "Use `override`, not `new`: `new` only hides the member when the variable's static type is Square." },
+    { "ar": "`ToString` يمكن أن تستخدم Name: `public override string ToString() => $\"{Name} {Width}x{Height}\";`. وللأكبر: `shapes.MaxBy(s => s.Area())` ترجع null للقائمة الفارغة، فتحقق أولاً بـ `Any()`.", "en": "`$\"{Name} {Width}x{Height}\"` and `shapes.MaxBy(s => s.Area())` (check `Any()` first)." }
+  ]
+}

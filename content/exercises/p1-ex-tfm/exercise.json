@@ -1,0 +1,16 @@
+{
+  "id": "p1-ex-tfm",
+  "title": { "ar": "محلل أُطر الاستهداف (TFM)", "en": "Target Framework (TFM) Parser" },
+  "kind": "exercise",
+  "difficulty": "medium",
+  "terms": ["tfm", "dotnet-framework", "dotnet-standard", "dotnet", "target-framework"],
+  "prompt": {
+    "ar": "كل مشروع ‎.NET يحدد إطار الاستهداف في `.csproj` بنص قصير يسمى [[tfm]] مثل `net10.0`. اكتب محللاً لهذه النصوص، ودالة تقرر هل تستطيع مكتبة أن تُستخدم في مشروع (هذه بالضبط القاعدة التي يطبّقها NuGet!).\n\n**`TfmParser.Parse(tfm)`** (بدون اعتبار لحالة الأحرف، مع تجاهل المسافات حول النص):\n- `net10.0` و `net8.0` → `DotNet` (الإصدار 5.0 فأحدث، فيه نقطة).\n- `net8.0-windows` → `DotNet` مع Platform = `\"windows\"`.\n- `net48` → `DotNetFramework` 4.8، و `net472` → 4.7.2 (أرقام بلا نقاط، كل رقم جزء من الإصدار).\n- `netstandard2.0` → `DotNetStandard` 2.0.\n- `netcoreapp3.1` → `DotNetCore` 3.1.\n- أي شيء آخر → `FormatException`.\n\n**`TfmParser.CanReference(projectTfm, libraryTfm)`**:\n- مكتبة `DotNet X` → المشروع DotNet بإصدار ≥ X. إذا كان للمكتبة Platform يجب أن يكون للمشروع نفس الـ Platform.\n- مكتبة `DotNetFramework X` → مشروع DotNetFramework بإصدار ≥ X فقط.\n- مكتبة `DotNetCore X` → مشروع DotNetCore ≥ X، أو أي مشروع DotNet.\n- مكتبة `DotNetStandard 2.0` → DotNetFramework ≥ 4.6.1، أو DotNetCore ≥ 2.0، أو DotNet، أو DotNetStandard ≥ 2.0.\n- مكتبة `DotNetStandard 2.1` → DotNetCore ≥ 3.0، أو DotNet، أو DotNetStandard ≥ 2.1. **ليس** ‎.NET Framework.\n- مكتبة `DotNetStandard` أقل من 2.0 → DotNetFramework ≥ 4.5، أو DotNetCore، أو DotNet، أو DotNetStandard بإصدار ≥ إصدار المكتبة.",
+    "en": "Parse TFMs (`net10.0`, `net8.0-windows`, `net48` → 4.8, `net472` → 4.7.2, `netstandard2.0`, `netcoreapp3.1`; anything else → FormatException) and implement NuGet's compatibility check `CanReference(projectTfm, libraryTfm)` following the rules in the Arabic description (.NET Standard 2.0 works on .NET Framework 4.6.1+, 2.1 does not work on .NET Framework at all, etc.)."
+  },
+  "hints": [
+    { "ar": "ابدأ بالأطول: افحص `StartsWith(\"netstandard\")` ثم `\"netcoreapp\"` ثم `\"net\"`، لأن \"netstandard\" تبدأ أيضاً بـ \"net\"! افصل الـ Platform بـ `Split('-', 2)`.", "en": "Check the longest prefixes first (netstandard, netcoreapp, then net), and split the platform with `Split('-', 2)`." },
+    { "ar": "للتمييز بين net8.0 و net48: إذا كان الجزء بعد \"net\" يحتوي نقطة فهو DotNet ويُحلل بـ `Version.Parse`. وإلا فهو ‎.NET Framework: `string.Join('.', digits.ToCharArray())` يحوّل \"472\" إلى \"4.7.2\". تحقق أن كل الأحرف أرقام بـ `All(char.IsAsciiDigit)`.", "en": "A dot means modern .NET; otherwise join the digits with dots: \"472\" → \"4.7.2\"." },
+    { "ar": "`Version` تدعم المقارنة مباشرة: `project.Version >= new Version(4, 6, 1)`. في CanReference استخدم `switch` على `lib.Family` وداخل كل حالة تعبيراً منطقياً على project.", "en": "`Version` supports `>=` comparisons; switch on the library family." }
+  ]
+}

@@ -1,0 +1,377 @@
+{
+  "id": "p1-program-config",
+  "title": {
+    "ar": "Program.cs والإعدادات والبيئات",
+    "en": "Program.cs, Configuration & Environments"
+  },
+  "summary": {
+    "ar": "ماذا يحدث في Program.cs سطراً سطراً، وكيف تُدمج الإعدادات من appsettings.json ومتغيرات البيئة وسطر الأوامر، ومعنى Development و Production.",
+    "en": "Program.cs line by line, how configuration merges appsettings.json, environment variables and command line, and what Development/Production mean."
+  },
+  "minutes": 35,
+  "terms": [
+    "program-cs",
+    "configuration",
+    "environment",
+    "top-level-statements",
+    "middleware",
+    "web-application-builder",
+    "configuration-provider",
+    "appsettings-json",
+    "user-secrets",
+    "environment-variables",
+    "command-line-arguments",
+    "configuration-key",
+    "options-pattern"
+  ],
+  "exercises": [
+    "p1-ex-config-flatten"
+  ],
+  "sections": [
+    {
+      "type": "text",
+      "ar": "[[program-cs]] هو أول ملف يُنفَّذ، ويكتب بـ [[top-level-statements]]، فلا ترى `class Program` ولا `static void Main`؛ المترجم يولّدهما. وكل تطبيق ASP.NET Core يتبع نفس الهيكل من مرحلتين:\n\n1. **Builder**: سجّل ما يحتاجه التطبيق من خدمات في `builder.Services`.\n2. **App**: ابنِ التطبيق، ثم رتّب [[middleware]] (المرحلة 2)، ثم عرّف الـ Endpoints، ثم `Run()`.",
+      "en": "Program.cs uses top-level statements and always has two halves: register services on the builder, then build the app, configure middleware, map endpoints and run."
+    },
+    {
+      "type": "analogy",
+      "ar": "Program.cs مثل افتتاح مطعم. **المرحلة الأولى (builder)**: توظّف الطاقم وتشتري المعدات (الخدمات). **المرحلة الثانية (app)**: ترتّب مسار الزبون: الاستقبال، ثم التحقق من الحجز، ثم الطاولة (الـ Middleware). ثم تعلّق قائمة الطعام (الـ Endpoints)، ثم تفتح الباب (`Run`). لا يمكنك توظيف طاقم جديد بعد فتح الباب، ولهذا يأتي `builder.Build()` في المنتصف كحد فاصل.",
+      "en": "Opening a restaurant: hire staff (services), arrange the customer path (middleware), hang the menu (endpoints), open the door (Run)."
+    },
+    {
+      "type": "compare",
+      "title": {
+        "ar": "نقطة البداية في Express و Laravel و ASP.NET Core",
+        "en": "Entry points in Express, Laravel and ASP.NET Core"
+      },
+      "items": [
+        {
+          "lang": "javascript",
+          "label": "Express",
+          "code": "const app = express();\napp.use(express.json());          // middleware\napp.get('/api/hello', (req, res) =>\n  res.json({ msg: 'hi' }));        // endpoint\napp.listen(3000);"
+        },
+        {
+          "lang": "php",
+          "label": "Laravel",
+          "code": "// bootstrap/app.php + routes/api.php\nRoute::get('/hello', fn () =>\n    response()->json(['msg' => 'hi']));"
+        },
+        {
+          "lang": "csharp",
+          "label": "ASP.NET Core",
+          "code": "var builder = WebApplication.CreateBuilder(args);\nbuilder.Services.AddProblemDetails();   // services\nvar app = builder.Build();\napp.UseExceptionHandler();              // middleware\napp.MapGet(\"/api/hello\", () => new { msg = \"hi\" }); // endpoint\napp.Run();"
+        }
+      ],
+      "note": {
+        "ar": "الفرق الأكبر عن Express هو مرحلة **الخدمات** المنفصلة، وهي حقن الاعتماديات المدمج.",
+        "en": "The big difference from Express is the separate services phase (built-in DI)."
+      }
+    },
+    {
+      "type": "source",
+      "path": "Backend/LearnBackend.Api/Program.cs",
+      "find": "var builder = WebApplication.CreateBuilder(args);",
+      "context": 30,
+      "note": {
+        "ar": "ملف Program.cs الحقيقي لهذا التطبيق، مع تعليقات تشرح كل جزء. اقرأه كاملاً!",
+        "en": "This app's real Program.cs, fully commented. Read it all!"
+      }
+    },
+    {
+      "type": "text",
+      "ar": "`WebApplication.CreateBuilder(args)` ([[web-application-builder]]) يجهّز الكثير تلقائياً: نظام [[configuration]]، والتسجيل في الطرفية (Logging)، وخادم الويب Kestrel، وحاوية الخدمات، ويحدد [[environment]].",
+      "en": "CreateBuilder sets up configuration, logging, Kestrel, the service container and the environment."
+    },
+    {
+      "type": "heading",
+      "ar": "الإعدادات: من أين تأتي القيم؟",
+      "en": "Configuration: where do values come from?"
+    },
+    {
+      "type": "text",
+      "ar": "قيمة مثل `Sandbox:TimeoutSeconds` قد تأتي من عدة أماكن. ASP.NET Core يقرأ **المزوّدات** ([[configuration-provider]]) بهذا الترتيب، **والأخير يفوز**:\n\n1. [[appsettings-json]]\n2. `appsettings.{Environment}.json`، مثلاً `appsettings.Development.json`\n3. [[user-secrets]] (في Development فقط)\n4. [[environment-variables]]\n5. [[command-line-arguments]]\n\nهذا الترتيب مقصود: الملفات للقيم الافتراضية، ومتغيرات البيئة لكل خادم، وسطر الأوامر للتجربة السريعة. **نفس الكود** يعمل على جهازك وفي الإنتاج بقيم مختلفة دون تعديل سطر واحد.",
+      "en": "Providers are applied in order (appsettings.json → appsettings.{Env}.json → user secrets → env vars → command line), last one wins."
+    },
+    {
+      "type": "visual",
+      "name": "config-layers",
+      "caption": {
+        "ar": "فعّل أو عطّل كل طبقة، وراقب القيمة النهائية التي يراها التطبيق.",
+        "en": "Toggle each layer and watch the final value the app sees."
+      }
+    },
+    {
+      "type": "annotated",
+      "lang": "json",
+      "title": {
+        "ar": "appsettings.json وكيف يُسطَّح",
+        "en": "appsettings.json and how it flattens"
+      },
+      "code": "{\n  \"Logging\": {\n    \"LogLevel\": {\n      \"Default\": \"Information\"\n    }\n  },\n  \"ConnectionStrings\": {\n    \"Default\": \"Data Source=learn.db\"\n  },\n  \"Sandbox\": {\n    \"TimeoutSeconds\": 5\n  }\n}",
+      "notes": {
+        "2": {
+          "ar": "قسم (Section). الأقسام تتداخل بلا حدود.",
+          "en": "A section; sections nest."
+        },
+        "4": {
+          "ar": "هذه القيمة مفتاحها المسطّح `Logging:LogLevel:Default`، بنقطتين بين الأقسام. هذا [[configuration-key]].",
+          "en": "Flattened key: Logging:LogLevel:Default."
+        },
+        "7": {
+          "ar": "قسم خاص له اختصار في الكود: `builder.Configuration.GetConnectionString(\"Default\")`.",
+          "en": "Special section with a helper method."
+        },
+        "11": {
+          "ar": "في متغيرات البيئة يُكتب `Sandbox__TimeoutSeconds=10` (شرطتان سفليتان بدل النقطتين)، فيستبدل هذه القيمة.",
+          "en": "As an env var: Sandbox__TimeoutSeconds=10."
+        }
+      }
+    },
+    {
+      "type": "source",
+      "path": "Backend/LearnBackend.Api/appsettings.json",
+      "find": "\"Sandbox\": {",
+      "context": 5,
+      "note": {
+        "ar": "إعدادات هذا التطبيق الحقيقية. جرّب: شغّل التطبيق بـ `dotnet run -- --Sandbox:TimeoutSeconds=2` وسيصبح حد الوقت ثانيتين!",
+        "en": "Try `dotnet run -- --Sandbox:TimeoutSeconds=2`."
+      }
+    },
+    {
+      "type": "source",
+      "path": "Backend/LearnBackend.Api/Program.cs",
+      "find": "builder.Services.Configure<SandboxOptions>(builder.Configuration.GetSection(SandboxOptions.SectionName));",
+      "context": 3,
+      "note": {
+        "ar": "[[options-pattern]]: قسم Sandbox يُربط بصنف SandboxOptions، والخدمات تستقبله جاهزاً. ستتعمق فيه في المرحلة 3.",
+        "en": "The options pattern binds the Sandbox section to SandboxOptions."
+      }
+    },
+    {
+      "type": "heading",
+      "ar": "البيئات: Development و Staging و Production",
+      "en": "Environments: Development, Staging, Production"
+    },
+    {
+      "type": "text",
+      "ar": "المتغير `ASPNETCORE_ENVIRONMENT` يحدد البيئة. **إذا لم يُحدَّد فالافتراضي Production**، وهذا تصميم آمن: لو نسيت ضبطه على الخادم فلن تظهر صفحات الأخطاء المفصلة للزوار.\n\nالبيئة تؤثر على: أي ملف `appsettings.{Env}.json` يُقرأ، وهل تعمل User Secrets، وما تكتبه أنت في الكود مثل `if (app.Environment.IsDevelopment())`.",
+      "en": "ASPNETCORE_ENVIRONMENT selects the environment; the default is Production (safe by design)."
+    },
+    {
+      "type": "source",
+      "path": "Backend/LearnBackend.Api/Program.cs",
+      "find": "if (app.Environment.IsDevelopment())",
+      "context": 3,
+      "note": {
+        "ar": "وصف الـ API بصيغة OpenAPI يُعرض فقط في بيئة التطوير.",
+        "en": "OpenAPI is only exposed in Development."
+      }
+    },
+    {
+      "type": "code",
+      "lang": "bash",
+      "code": "# Windows PowerShell\n$env:ASPNETCORE_ENVIRONMENT = \"Production\"\n$env:Sandbox__TimeoutSeconds = \"10\"\ndotnet run --project Backend/LearnBackend.Api\n\n# Linux / macOS / Git Bash\nASPNETCORE_ENVIRONMENT=Production Sandbox__TimeoutSeconds=10 dotnet run --project Backend/LearnBackend.Api\n\n# Docker\ndocker run -e ASPNETCORE_ENVIRONMENT=Production -e ConnectionStrings__Default=\"...\" myapp",
+      "title": {
+        "ar": "ضبط البيئة والإعدادات من الخارج",
+        "en": "Setting the environment and config from outside"
+      }
+    },
+    {
+      "type": "callout",
+      "kind": "warning",
+      "ar": "**الأسرار لا تدخل appsettings.json أبداً**: كلمات مرور قاعدة البيانات، ومفاتيح API، ومفاتيح JWT. محلياً استخدم `dotnet user-secrets`، وفي الإنتاج متغيرات البيئة أو Azure Key Vault. الملف يُرفع إلى Git، و Git لا ينسى.",
+      "en": "Never put secrets in appsettings.json: use user-secrets locally and env vars / Key Vault in production."
+    },
+    {
+      "type": "mistakes",
+      "items": [
+        {
+          "title": {
+            "ar": "استخدام : في اسم متغير البيئة",
+            "en": "Using : in environment variable names"
+          },
+          "wrong": "export Sandbox:TimeoutSeconds=10   # invalid on Linux",
+          "right": "export Sandbox__TimeoutSeconds=10",
+          "ar": "Linux لا يقبل النقطتين في أسماء متغيرات البيئة، و `__` تتحول تلقائياً إلى `:`.",
+          "en": "Use __ instead of :."
+        },
+        {
+          "title": {
+            "ar": "تسجيل خدمة بعد Build()",
+            "en": "Registering services after Build()"
+          },
+          "wrong": "var app = builder.Build();\nbuilder.Services.AddScoped<IMyService, MyService>(); // InvalidOperationException",
+          "right": "builder.Services.AddScoped<IMyService, MyService>();\nvar app = builder.Build();",
+          "ar": "بعد Build() تصبح حاوية الخدمات للقراءة فقط.",
+          "en": "The service collection is read-only after Build()."
+        },
+        {
+          "title": {
+            "ar": "افتراض أن البيئة الافتراضية Development",
+            "en": "Assuming the default is Development"
+          },
+          "wrong": "// works on my machine (launchSettings sets Development)...\n// ...on the server: no detailed errors, different config!",
+          "right": "// The default is Production. launchSettings.json is only used locally.",
+          "ar": "launchSettings.json يضبط Development على جهازك فقط، والخادم بدون ضبط = Production.",
+          "en": "Without configuration, it's Production."
+        },
+        {
+          "title": {
+            "ar": "قراءة الإعدادات كنصوص في كل مكان",
+            "en": "Reading raw config strings everywhere"
+          },
+          "wrong": "var t = int.Parse(config[\"Sandbox:TimeoutSeconds\"]!); // in 10 different files",
+          "right": "builder.Services.Configure<SandboxOptions>(builder.Configuration.GetSection(\"Sandbox\"));",
+          "ar": "استخدم Options pattern: صنف واحد بأنواع صحيحة، وخطأ الإملاء يظهر مرة واحدة.",
+          "en": "Use the options pattern."
+        }
+      ]
+    }
+  ],
+  "quiz": [
+    {
+      "question": {
+        "ar": "ما الترتيب الصحيح في Program.cs؟",
+        "en": "Correct order in Program.cs?"
+      },
+      "options": [
+        {
+          "ar": "Build ثم تسجيل الخدمات ثم Run",
+          "en": "Build, register services, Run"
+        },
+        {
+          "ar": "تسجيل الخدمات ثم Build ثم Middleware و Endpoints ثم Run",
+          "en": "Register services, Build, middleware & endpoints, Run"
+        },
+        {
+          "ar": "Run ثم Build",
+          "en": "Run, then Build"
+        },
+        {
+          "ar": "لا يهم الترتيب",
+          "en": "Order doesn't matter"
+        }
+      ],
+      "answer": 1,
+      "explanation": {
+        "ar": "الخدمات قبل Build، والـ Pipeline بعده، و Run في النهاية.",
+        "en": "Services before Build; pipeline after; Run last."
+      }
+    },
+    {
+      "question": {
+        "ar": "المفتاح موجود في appsettings.json وفي متغير بيئة وفي سطر الأوامر. أي قيمة تُستخدم؟",
+        "en": "A key is in appsettings.json, an env var and the command line. Which wins?"
+      },
+      "options": [
+        {
+          "ar": "appsettings.json",
+          "en": "appsettings.json"
+        },
+        {
+          "ar": "متغير البيئة",
+          "en": "The environment variable"
+        },
+        {
+          "ar": "سطر الأوامر",
+          "en": "The command line"
+        },
+        {
+          "ar": "خطأ",
+          "en": "Error"
+        }
+      ],
+      "answer": 2,
+      "explanation": {
+        "ar": "سطر الأوامر آخر مزوّد، والأخير يفوز.",
+        "en": "Last provider wins."
+      }
+    },
+    {
+      "question": {
+        "ar": "كيف تكتب المفتاح `Logging:LogLevel:Default` كمتغير بيئة؟",
+        "en": "How do you write `Logging:LogLevel:Default` as an env var?"
+      },
+      "options": [
+        {
+          "ar": "Logging.LogLevel.Default",
+          "en": "Logging.LogLevel.Default"
+        },
+        {
+          "ar": "Logging__LogLevel__Default",
+          "en": "Logging__LogLevel__Default"
+        },
+        {
+          "ar": "LOGGING_LOGLEVEL_DEFAULT",
+          "en": "LOGGING_LOGLEVEL_DEFAULT"
+        },
+        {
+          "ar": "Logging-LogLevel-Default",
+          "en": "Logging-LogLevel-Default"
+        }
+      ],
+      "answer": 1,
+      "explanation": {
+        "ar": "شرطتان سفليتان `__` تمثلان `:`.",
+        "en": "Double underscore."
+      }
+    },
+    {
+      "question": {
+        "ar": "ما البيئة الافتراضية إذا لم يُضبط ASPNETCORE_ENVIRONMENT؟",
+        "en": "Default environment if ASPNETCORE_ENVIRONMENT isn't set?"
+      },
+      "options": [
+        {
+          "ar": "Development",
+          "en": "Development"
+        },
+        {
+          "ar": "Staging",
+          "en": "Staging"
+        },
+        {
+          "ar": "Production",
+          "en": "Production"
+        },
+        {
+          "ar": "Test",
+          "en": "Test"
+        }
+      ],
+      "answer": 2,
+      "explanation": {
+        "ar": "Production افتراضياً، وهذا قرار أمني.",
+        "en": "Production by default."
+      }
+    },
+    {
+      "question": {
+        "ar": "أين تضع مفتاح API سري أثناء التطوير؟",
+        "en": "Where do you store a secret API key during development?"
+      },
+      "options": [
+        {
+          "ar": "appsettings.json",
+          "en": "appsettings.json"
+        },
+        {
+          "ar": "launchSettings.json",
+          "en": "launchSettings.json"
+        },
+        {
+          "ar": "dotnet user-secrets",
+          "en": "dotnet user-secrets"
+        },
+        {
+          "ar": "Program.cs",
+          "en": "Program.cs"
+        }
+      ],
+      "answer": 2,
+      "explanation": {
+        "ar": "User Secrets خارج مجلد المشروع فلا تُرفع إلى Git.",
+        "en": "Stored outside the repo."
+      }
+    }
+  ]
+}

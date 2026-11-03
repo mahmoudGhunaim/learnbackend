@@ -1,0 +1,388 @@
+{
+  "id": "p0-nullable",
+  "title": {
+    "ar": "الأنواع القابلة لـ null",
+    "en": "Nullable Types"
+  },
+  "summary": {
+    "ar": "int? و string? والمعاملات ?. و ?? و ??=، وكيف يمنع المترجم أشهر خطأ في ‎.NET: NullReferenceException.",
+    "en": "int?, string?, ?. ?? ??= and how the compiler prevents NullReferenceException."
+  },
+  "minutes": 25,
+  "terms": [
+    "null-reference-exception",
+    "nullable-value-types",
+    "nullable-reference-types",
+    "null-conditional",
+    "null-coalescing",
+    "null-forgiving"
+  ],
+  "exercises": [
+    "p0-ex-nullable-profile"
+  ],
+  "sections": [
+    {
+      "type": "text",
+      "ar": "مخترع مفهوم null، توني هور، سماه «خطأ المليار دولار». في ‎.NET تظهر هذه المشكلة كاستثناء [[null-reference-exception]]: تحاول قراءة `user.Address.City` و Address قيمته null.\n\nC# الحديثة تعالج هذا على مستويين:\n\n1. [[nullable-value-types]]: `int` لا يمكن أن يكون null أبداً، و `int?` يمكن.\n2. [[nullable-reference-types]]: مع `<Nullable>enable</Nullable>` (مفعّل افتراضياً في كل مشروع جديد)، `string` تعني «لن تكون null»، و `string?` تعني «قد تكون null»، **والمترجم يحذّرك** إذا استخدمت قيمة قد تكون null دون فحص.",
+      "en": "Value types: int vs int?. Reference types: with nullable enabled, string means never-null and string? maybe-null, with compiler warnings."
+    },
+    {
+      "type": "analogy",
+      "ar": "فكّر في علامة `?` كملصق «قد يكون فارغاً» على صندوق. بدون الملصق يعدك المرسل بأن الصندوق ممتلئ دائماً. ومع الملصق يجبرك المترجم، كموظف الجمارك، على فتح الصندوق والتحقق قبل أن تستخدم ما بداخله. أما `!` فهو أن تقول للموظف «ثق بي، إنه ممتلئ». إذا كنت مخطئاً فالمشكلة تقع عليك وقت التشغيل.",
+      "en": "`?` is a \"may be empty\" label; the compiler makes you check before use. `!` is \"trust me\"."
+    },
+    {
+      "type": "compare",
+      "title": {
+        "ar": "التعامل مع null في ثلاث لغات",
+        "en": "Handling null in three languages"
+      },
+      "items": [
+        {
+          "lang": "javascript",
+          "label": "JavaScript",
+          "code": "const city = user?.address?.city ?? \"Unknown\";\n// two \"nothing\" values: null and undefined"
+        },
+        {
+          "lang": "php",
+          "label": "PHP 8",
+          "code": "$city = $user?->address?->city ?? 'Unknown';\nfunction find(int $id): ?User { ... } // nullable return type"
+        },
+        {
+          "lang": "csharp",
+          "label": "C#",
+          "code": "var city = user?.Address?.City ?? \"Unknown\";\nUser? Find(int id) { ... }  // nullable return type\n// one \"nothing\" value: null"
+        }
+      ],
+      "note": {
+        "ar": "المعاملات متطابقة تقريباً في اللغات الثلاث. الفرق أن C# تتحقق **وقت الترجمة** إن نسيت استخدامها.",
+        "en": "Same operators; C# checks at compile time."
+      }
+    },
+    {
+      "type": "heading",
+      "ar": "المعاملات الأربعة",
+      "en": "The four operators"
+    },
+    {
+      "type": "table",
+      "headers": [
+        {
+          "ar": "المعامل",
+          "en": "Operator"
+        },
+        {
+          "ar": "الاسم",
+          "en": "Name"
+        },
+        {
+          "ar": "المثال",
+          "en": "Example"
+        },
+        {
+          "ar": "المعنى",
+          "en": "Meaning"
+        }
+      ],
+      "rows": [
+        [
+          "`?.`",
+          "[[null-conditional]]",
+          "`user?.Name`",
+          "إذا كان user قيمته null فالنتيجة null، بدون استثناء"
+        ],
+        [
+          "`??`",
+          "[[null-coalescing]]",
+          "`name ?? \"Guest\"`",
+          "إذا كانت القيمة null فاستخدم البديل"
+        ],
+        [
+          "`??=`",
+          "Null-coalescing assignment",
+          "`cache ??= Load();`",
+          "أسند القيمة فقط إذا كان المتغير null"
+        ],
+        [
+          "`!`",
+          "[[null-forgiving]]",
+          "`root!.Name`",
+          "يُسكت التحذير فقط، ولا يحمي من شيء وقت التشغيل"
+        ]
+      ]
+    },
+    {
+      "type": "annotated",
+      "lang": "csharp",
+      "title": {
+        "ar": "نموذج مستخدم ببيانات اختيارية",
+        "en": "A user model with optional data"
+      },
+      "code": "static string Describe(User user)\n{\n    var name = string.IsNullOrWhiteSpace(user.DisplayName) ? user.UserName : user.DisplayName;\n    var city = user.Address?.City ?? \"Unknown\";\n    var age = user.Age is int a ? a.ToString() : \"?\";\n    return $\"{name} from {city}, age {age}\";\n}\n\npublic class User\n{\n    public required string UserName { get; init; }\n    public string? DisplayName { get; set; }\n    public Address? Address { get; set; }\n    public int? Age { get; set; }\n}\npublic class Address { public string? City { get; set; } }",
+      "notes": {
+        "3": {
+          "ar": "`??` لا يكفي هنا لأن \"   \" ليس null! `IsNullOrWhiteSpace` يفحص الحالتين، والمترجم يفهم أن DisplayName ليس null في الفرع الثاني.",
+          "en": "?? isn't enough for blank strings; the compiler understands IsNullOrWhiteSpace."
+        },
+        "4": {
+          "ar": "سلسلة ?. ثم ??: إذا كان Address أو City قيمته null نستخدم \"Unknown\".",
+          "en": "Chain ?. then ??."
+        },
+        "5": {
+          "ar": "Pattern matching: `is int a` ينجح فقط إذا كانت هناك قيمة، ويعطيها لنا في المتغير a.",
+          "en": "`is int a` matches only when there's a value."
+        },
+        "11": {
+          "ar": "`required`: لا يمكن إنشاء User دون إعطاء UserName قيمة. ونوعه `string` بلا `?`، أي أنه لن يكون null أبداً.",
+          "en": "required + non-nullable: never null."
+        },
+        "12": {
+          "ar": "`string?`: اختياري، وقد يكون null.",
+          "en": "Optional, may be null."
+        },
+        "13": {
+          "ar": "`Address?`: المستخدم قد لا يملك عنواناً.",
+          "en": "May have no address."
+        },
+        "14": {
+          "ar": "`int?` نوع قيمة قابل لـ null، أي `Nullable<int>`. مناسب جداً لعمود اختياري في قاعدة البيانات.",
+          "en": "Nullable<int>: great for optional DB columns."
+        }
+      }
+    },
+    {
+      "type": "code",
+      "lang": "csharp",
+      "code": "string? maybe = DateTime.Now.Second % 2 == 0 ? \"hello\" : null;\n\n// Console.WriteLine(maybe.Length);       // warning CS8602: possible null dereference\nConsole.WriteLine(maybe?.Length);          // null-safe: prints a number or an empty line\nConsole.WriteLine(maybe?.Length ?? 0);     // fallback value\n\nif (maybe is not null)\n    Console.WriteLine(maybe.ToUpper());    // no warning: the compiler knows it's not null here\n\nint? age = null;\nConsole.WriteLine(age.HasValue);           // False\nConsole.WriteLine(age.GetValueOrDefault()); // 0\n\nList<string>? cache = null;\ncache ??= new List<string> { \"loaded once\" };\nConsole.WriteLine(cache[0]);",
+      "title": {
+        "ar": "جرّب وراقب التحذيرات في المحرر",
+        "en": "Try it and watch the warnings"
+      },
+      "runnable": true
+    },
+    {
+      "type": "callout",
+      "kind": "dotnet",
+      "ar": "**جديد في C# 14 (مع ‎.NET 10):** معامل `?.` يعمل الآن في الإسناد أيضاً: `customer?.LastSeen = DateTime.UtcNow;` تُسند القيمة فقط إذا كان customer ليس null، بدلاً من كتابة `if (customer is not null)`.",
+      "en": "New in C# 14: null-conditional assignment `customer?.LastSeen = DateTime.UtcNow;`."
+    },
+    {
+      "type": "callout",
+      "kind": "warning",
+      "ar": "الأنواع المرجعية القابلة لـ null **تحذيرات وقت الترجمة فقط**. وقت التشغيل، `string` يمكن أن تصله قيمة null من JSON أو من مكتبة قديمة. لهذا تتحقق ASP.NET Core من صحة المدخلات (Validation) في المرحلة 2.",
+      "en": "Nullable reference types are compile-time only; still validate external input."
+    },
+    {
+      "type": "source",
+      "path": "Backend/LearnBackend.Api/LearnBackend.Api.csproj",
+      "find": "<Nullable>enable</Nullable>",
+      "context": 3,
+      "note": {
+        "ar": "هذا السطر في ملف المشروع هو ما يفعّل تحليل null في كل ملفات المشروع.",
+        "en": "This csproj line turns on nullable analysis for the whole project."
+      }
+    },
+    {
+      "type": "source",
+      "path": "Backend/LearnBackend.Api/Endpoints/ExerciseEndpoints.cs",
+      "find": "row is not null && (row.SolvedAt is not null || row.HintsUsed >= exercise.Hints.Count)",
+      "context": 3,
+      "note": {
+        "ar": "`row` من نوع `ExerciseProgress?`، لأنك ربما لم تفتح التمرين بعد، و `SolvedAt` من نوع `DateTime?`. لاحظ استخدام `is not null`.",
+        "en": "row is ExerciseProgress? and SolvedAt is DateTime?; checked with `is not null`."
+      }
+    },
+    {
+      "type": "mistakes",
+      "items": [
+        {
+          "title": {
+            "ar": "إسكات المترجم بـ ! بدلاً من معالجة null",
+            "en": "Silencing with ! instead of handling null"
+          },
+          "wrong": "var city = user!.Address!.City!;",
+          "right": "var city = user?.Address?.City ?? \"Unknown\";",
+          "ar": "`!` لا يغير شيئاً وقت التشغيل. إذا كانت القيمة null فسيحدث NullReferenceException.",
+          "en": "! has no runtime effect."
+        },
+        {
+          "title": {
+            "ar": "استخدام ?? مع النصوص الفارغة",
+            "en": "Using ?? for blank strings"
+          },
+          "wrong": "var name = user.DisplayName ?? user.UserName; // \"   \" passes through",
+          "right": "var name = string.IsNullOrWhiteSpace(user.DisplayName) ? user.UserName : user.DisplayName;",
+          "ar": "?? تفحص null فقط، ولا تفحص النص الفارغ أو المسافات.",
+          "en": "?? only checks null."
+        },
+        {
+          "title": {
+            "ar": "المقارنة بـ == null مع عامل معاد تعريفه",
+            "en": "Comparing with == null"
+          },
+          "wrong": "if (user == null) ...",
+          "right": "if (user is null) ...",
+          "ar": "`is null` لا يمكن خداعها بإعادة تعريف المعامل ==، وهي الأسلوب المفضل حالياً.",
+          "en": "`is null` can't be overridden."
+        },
+        {
+          "title": {
+            "ar": "تجاهل التحذيرات",
+            "en": "Ignoring the warnings"
+          },
+          "wrong": "// 47 nullable warnings... it compiles, ship it!",
+          "right": "<TreatWarningsAsErrors>true</TreatWarningsAsErrors>",
+          "ar": "كل تحذير CS86xx هو NullReferenceException محتمل في الإنتاج. فرق كثيرة تجعل التحذيرات أخطاء.",
+          "en": "Each CS86xx warning is a potential production crash."
+        }
+      ]
+    }
+  ],
+  "quiz": [
+    {
+      "question": {
+        "ar": "ما الفرق بين `string` و `string?` عند تفعيل Nullable؟",
+        "en": "string vs string? with nullable enabled?"
+      },
+      "options": [
+        {
+          "ar": "لا فرق وقت التشغيل لكن المترجم يحذرك إذا استخدمت string? دون فحص",
+          "en": "No runtime difference, but the compiler warns about unchecked string? use"
+        },
+        {
+          "ar": "string? أبطأ",
+          "en": "string? is slower"
+        },
+        {
+          "ar": "string لا يمكن أن تكون فارغة \"\"",
+          "en": "string can't be empty"
+        },
+        {
+          "ar": "string? نوع قيمة",
+          "en": "string? is a value type"
+        }
+      ],
+      "answer": 0,
+      "explanation": {
+        "ar": "إنها تعليقات للمترجم (Annotations) وتحليل وقت الترجمة.",
+        "en": "Compile-time annotations."
+      }
+    },
+    {
+      "question": {
+        "ar": "ماذا ترجع `user?.Address?.City` إذا كان Address قيمته null؟",
+        "en": "What does `user?.Address?.City` return if Address is null?"
+      },
+      "options": [
+        {
+          "ar": "ترمي NullReferenceException",
+          "en": "Throws"
+        },
+        {
+          "ar": "null",
+          "en": "null"
+        },
+        {
+          "ar": "\"\"",
+          "en": "\"\""
+        },
+        {
+          "ar": "خطأ ترجمة",
+          "en": "Compile error"
+        }
+      ],
+      "answer": 1,
+      "explanation": {
+        "ar": "?. توقف السلسلة وترجع null.",
+        "en": "?. short-circuits to null."
+      }
+    },
+    {
+      "question": {
+        "ar": "ما ناتج `int? x = null; var y = x ?? 5;`؟",
+        "en": "Result of `int? x = null; var y = x ?? 5;`?"
+      },
+      "options": [
+        {
+          "ar": "null",
+          "en": "null"
+        },
+        {
+          "ar": "0",
+          "en": "0"
+        },
+        {
+          "ar": "5",
+          "en": "5"
+        },
+        {
+          "ar": "خطأ",
+          "en": "Error"
+        }
+      ],
+      "answer": 2,
+      "explanation": {
+        "ar": "?? تعطي البديل عندما تكون القيمة null.",
+        "en": "?? provides the fallback."
+      }
+    },
+    {
+      "question": {
+        "ar": "ماذا يفعل المعامل `!` في `name!.Length`؟",
+        "en": "What does `!` do in `name!.Length`?"
+      },
+      "options": [
+        {
+          "ar": "يحول null إلى نص فارغ",
+          "en": "Turns null into \"\""
+        },
+        {
+          "ar": "يُسكت تحذير المترجم فقط",
+          "en": "Only silences the compiler warning"
+        },
+        {
+          "ar": "يرمي استثناء أوضح",
+          "en": "Throws a clearer exception"
+        },
+        {
+          "ar": "ينفي القيمة",
+          "en": "Negates the value"
+        }
+      ],
+      "answer": 1,
+      "explanation": {
+        "ar": "Null-forgiving operator ليس له أي أثر وقت التشغيل.",
+        "en": "No runtime effect."
+      }
+    },
+    {
+      "question": {
+        "ar": "أي كود يطبع \"Unknown\" لمستخدم DisplayName عنده \"   \"؟",
+        "en": "Which prints \"Unknown\" for DisplayName = \"   \"?"
+      },
+      "options": [
+        {
+          "ar": "user.DisplayName ?? \"Unknown\"",
+          "en": "user.DisplayName ?? \"Unknown\""
+        },
+        {
+          "ar": "string.IsNullOrWhiteSpace(user.DisplayName) ? \"Unknown\" : user.DisplayName",
+          "en": "string.IsNullOrWhiteSpace(user.DisplayName) ? \"Unknown\" : user.DisplayName"
+        },
+        {
+          "ar": "user.DisplayName!",
+          "en": "user.DisplayName!"
+        },
+        {
+          "ar": "user?.DisplayName",
+          "en": "user?.DisplayName"
+        }
+      ],
+      "answer": 1,
+      "explanation": {
+        "ar": "?? تفحص null فقط، و \"   \" ليست null.",
+        "en": "?? doesn't treat blank strings as missing."
+      }
+    }
+  ]
+}

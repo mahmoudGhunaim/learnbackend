@@ -1,0 +1,388 @@
+{
+  "id": "p0-classes",
+  "title": {
+    "ar": "الأصناف والكائنات",
+    "en": "Classes & Objects"
+  },
+  "summary": {
+    "ar": "الخصائص والحقول والبواني ومُعدِّلات الوصول، والتغليف الذي يحمي بياناتك، والفرق عن class في JavaScript و PHP.",
+    "en": "Properties, fields, constructors, access modifiers and encapsulation, compared with JS and PHP classes."
+  },
+  "minutes": 30,
+  "terms": [
+    "class",
+    "object",
+    "encapsulation",
+    "field",
+    "property",
+    "access-modifier",
+    "primary-constructor",
+    "static-member"
+  ],
+  "exercises": [
+    "p0-ex-bank-account"
+  ],
+  "sections": [
+    {
+      "type": "text",
+      "ar": "في C# **كل** الكود يعيش داخل نوع: صنف ([[class]]) أو record أو struct. لا توجد دوال حرة كما في JavaScript. الصنف قالب، و [[object]] نسخة حقيقية منه تُنشأ بـ `new`.\n\nإذا كتبت `class` في JavaScript أو PHP من قبل فأنت تعرف 70% مما ستراه. الفرق الكبير هو **الخصائص** و **مُعدِّلات الوصول** التي تُفرض فعلاً من المترجم.",
+      "en": "All C# code lives inside types. A class is a blueprint; an object is an instance created with new."
+    },
+    {
+      "type": "analogy",
+      "ar": "الصنف مثل مخطط بيت عند المهندس، والكائن هو البيت المبني فعلاً. من نفس المخطط تبني بيوتاً كثيرة، ولكل بيت لون جدرانه وسكانه. والتغليف ([[encapsulation]]) هو أن تضع عداد الكهرباء داخل صندوق مقفل: الساكن يرى القراءة، لكنه لا يستطيع تحريك الإبرة بيده. الطريقة الوحيدة لتغيير القراءة هي استهلاك الكهرباء فعلاً.",
+      "en": "A class is a blueprint, an object is a built house; encapsulation is the locked electricity meter."
+    },
+    {
+      "type": "compare",
+      "title": {
+        "ar": "صنف بسيط في ثلاث لغات",
+        "en": "A simple class in three languages"
+      },
+      "items": [
+        {
+          "lang": "javascript",
+          "label": "JavaScript",
+          "code": "class Product {\n  #price; // private (ES2022)\n  constructor(name, price) {\n    this.name = name;\n    this.#price = price;\n  }\n  get price() { return this.#price; }\n}"
+        },
+        {
+          "lang": "php",
+          "label": "PHP 8",
+          "code": "class Product {\n    public function __construct(\n        public string $name,\n        private float $price,\n    ) {}\n    public function getPrice(): float { return $this->price; }\n}"
+        },
+        {
+          "lang": "csharp",
+          "label": "C#",
+          "code": "public class Product\n{\n    public Product(string name, decimal price)\n    {\n        Name = name;\n        Price = price;\n    }\n    public string Name { get; }\n    public decimal Price { get; private set; }\n}"
+        }
+      ],
+      "note": {
+        "ar": "لاحظ أن C# تجمع الحقل الخاص والـ getter في سطر واحد هو الخاصية: `public decimal Price { get; private set; }`.",
+        "en": "C# merges the private field and getter into a property."
+      }
+    },
+    {
+      "type": "heading",
+      "ar": "الحقول والخصائص",
+      "en": "Fields vs properties"
+    },
+    {
+      "type": "text",
+      "ar": "- [[field]]: متغير داخل الكائن. الاصطلاح أن يكون `private` واسمه يبدأ بـ `_`.\n- [[property]]: تبدو كحقل من الخارج (`account.Balance`)، لكنها في الحقيقة دالتا `get` و `set`. لهذا تستطيع جعل القراءة عامة والكتابة خاصة، أو إضافة تحقق داخل set.\n\nالقاعدة في C#: **ما يراه العالم الخارجي = خاصية، وما هو داخلي = حقل خاص**. ASP.NET Core نفسه يعتمد على هذا: تحويل JSON يقرأ الخصائص العامة فقط، وكذلك EF Core.",
+      "en": "Fields are internal variables; properties are get/set accessors that look like fields. Public API = properties."
+    },
+    {
+      "type": "annotated",
+      "lang": "csharp",
+      "title": {
+        "ar": "صنف مغلّف جيداً",
+        "en": "A well-encapsulated class"
+      },
+      "code": "public class BankAccount\n{\n    private readonly List<decimal> _transactions = new();\n\n    public BankAccount(string owner)\n    {\n        if (string.IsNullOrWhiteSpace(owner))\n            throw new ArgumentException(\"Owner is required.\", nameof(owner));\n        Owner = owner;\n    }\n\n    public string Owner { get; }\n    public decimal Balance { get; private set; }\n    public IReadOnlyList<decimal> Transactions => _transactions;\n\n    public void Deposit(decimal amount)\n    {\n        if (amount <= 0) throw new ArgumentOutOfRangeException(nameof(amount));\n        Balance += amount;\n        _transactions.Add(amount);\n    }\n}",
+      "notes": {
+        "1": {
+          "ar": "`public`: أي كود في أي مكان يستطيع استخدام هذا الصنف.",
+          "en": "public: usable from anywhere."
+        },
+        "3": {
+          "ar": "حقل خاص `readonly`: لا يُستبدل بقائمة أخرى بعد الإنشاء، لكن يمكن إضافة عناصر إليه من داخل الصنف.",
+          "en": "Private readonly field: can't be reassigned, but its contents can change internally."
+        },
+        "5": {
+          "ar": "الباني (Constructor): نفس اسم الصنف وبدون نوع إرجاع، ويعمل مرة واحدة مع `new`.",
+          "en": "Constructor: same name as the class, runs once."
+        },
+        "7": {
+          "ar": "التحقق في الباني يضمن أنه **لا يوجد** كائن BankAccount بحالة غير صالحة.",
+          "en": "Validation guarantees no invalid instance can exist."
+        },
+        "8": {
+          "ar": "`nameof(owner)` تعطي النص \"owner\"، فإذا غيّرت اسم المعامل لاحقاً يتغير النص تلقائياً.",
+          "en": "nameof gives \"owner\" safely."
+        },
+        "12": {
+          "ar": "`{ get; }` فقط: للقراءة، وتُعطى قيمتها في الباني فقط.",
+          "en": "get-only: assigned only in the constructor."
+        },
+        "13": {
+          "ar": "قراءة عامة وكتابة خاصة: هذا هو جوهر التغليف.",
+          "en": "Public read, private write: encapsulation."
+        },
+        "14": {
+          "ar": "نكشف القائمة كـ `IReadOnlyList` حتى لا يستطيع أحد استدعاء Add عليها من الخارج.",
+          "en": "Exposed as IReadOnlyList so callers can't Add."
+        },
+        "18": {
+          "ar": "القاعدة التجارية في مكان واحد: لا إيداع لمبلغ سالب، أبداً.",
+          "en": "The business rule lives in one place."
+        }
+      }
+    },
+    {
+      "type": "heading",
+      "ar": "مُعدِّلات الوصول",
+      "en": "Access modifiers"
+    },
+    {
+      "type": "table",
+      "headers": [
+        {
+          "ar": "المعدِّل",
+          "en": "Modifier"
+        },
+        {
+          "ar": "من يستطيع الوصول",
+          "en": "Who can access"
+        }
+      ],
+      "rows": [
+        [
+          "`public`",
+          "الجميع"
+        ],
+        [
+          "`private`",
+          "داخل نفس الصنف فقط (الافتراضي لأعضاء الصنف)"
+        ],
+        [
+          "`protected`",
+          "الصنف نفسه والأصناف التي ترثه"
+        ],
+        [
+          "`internal`",
+          "أي كود في نفس المشروع (Assembly)، وهو الافتراضي للأصناف"
+        ],
+        [
+          "`protected internal` / `private protected`",
+          "تركيبات نادرة، ستعرفها عند الحاجة"
+        ]
+      ]
+    },
+    {
+      "type": "text",
+      "ar": "[[access-modifier]] في C# يُفرض من المترجم: كتابة `account.Balance = 1000000;` من خارج الصنف تعطي خطأ ترجمة CS0272، وليس مجرد اتفاق بين المبرمجين كما كانت `_private` في JavaScript القديمة.",
+      "en": "Access modifiers are enforced by the compiler."
+    },
+    {
+      "type": "heading",
+      "ar": "صيغ مختصرة حديثة",
+      "en": "Modern shorthand"
+    },
+    {
+      "type": "code",
+      "lang": "csharp",
+      "code": "// Object initializer: set properties right after construction\nvar pen = new Product { Name = \"Pen\", Price = 1.5m };\n\n// Target-typed new: the type is known from the left side\nProduct book = new() { Name = \"Book\", Price = 20m };\n\n// Primary constructor (C# 12): parameters available in the whole class\npublic class PriceService(ITaxProvider taxes)\n{\n    public decimal WithTax(decimal price) => price * (1 + taxes.Rate);\n}\n\n// The \"field\" keyword (C# 14): validation without declaring a backing field yourself\npublic class Product\n{\n    public string Name { get; set => field = value.Trim(); } = \"\";\n    public decimal Price { get; set; }\n}",
+      "title": {
+        "ar": "صيغ ستراها كثيراً في كود ASP.NET Core",
+        "en": "Syntax you'll see a lot in ASP.NET Core code"
+      }
+    },
+    {
+      "type": "text",
+      "ar": "[[primary-constructor]] هي الطريقة التي ستستقبل بها الخدمات في ASP.NET Core عبر حقن الاعتماديات. هذا التطبيق نفسه يستخدمها في كل مكان.\n\nو [[static-member]] يخص الصنف نفسه لا الكائن: `Math.Max(a, b)` و `DateTime.UtcNow` أعضاء static. في الخوادم انتبه: الحقل static **مشترك بين كل الطلبات وكل المستخدمين** في نفس الوقت.",
+      "en": "Primary constructors are how services receive dependencies; static members are shared by everyone, including all concurrent requests."
+    },
+    {
+      "type": "source",
+      "path": "Backend/LearnBackend.Api/CodeRunner/CodeCompiler.cs",
+      "find": "public sealed class CodeCompiler(ReferenceCatalog references)",
+      "context": 3,
+      "note": {
+        "ar": "Primary constructor حقيقي: المترجم الذي يترجم كودك يستقبل قائمة المراجع بهذه الطريقة.",
+        "en": "A real primary constructor: the compiler service receives its references this way."
+      }
+    },
+    {
+      "type": "source",
+      "path": "Backend/LearnBackend.Api/Data/Entities/Entities.cs",
+      "find": "public class ExerciseProgress",
+      "context": 12,
+      "note": {
+        "ar": "صنف بسيط بخصائص فقط (Entity) يحفظ تقدمك في كل تمرين في قاعدة البيانات. EF Core يحوّل كل خاصية إلى عمود.",
+        "en": "A property-only entity class; EF Core maps each property to a column."
+      }
+    },
+    {
+      "type": "mistakes",
+      "items": [
+        {
+          "title": {
+            "ar": "جعل كل شيء public { get; set; }",
+            "en": "Making everything public get/set"
+          },
+          "wrong": "public decimal Balance { get; set; }\naccount.Balance = -500; // nothing stops this",
+          "right": "public decimal Balance { get; private set; }\npublic void Withdraw(decimal amount) { /* rules */ }",
+          "ar": "بهذا تنتشر القواعد التجارية في كل مكان، وأي كود يستطيع إفساد الحالة.",
+          "en": "Business rules leak everywhere."
+        },
+        {
+          "title": {
+            "ar": "كشف القائمة الداخلية مباشرة",
+            "en": "Exposing the internal List"
+          },
+          "wrong": "public List<Order> Orders { get; } = new();\ncustomer.Orders.Clear(); // oops",
+          "right": "private readonly List<Order> _orders = new();\npublic IReadOnlyList<Order> Orders => _orders.AsReadOnly();",
+          "ar": "حتى مع `{ get; }` فقط يستطيع المستدعي تعديل محتوى القائمة.",
+          "en": "get-only doesn't stop callers from mutating the list."
+        },
+        {
+          "title": {
+            "ar": "حقل static لبيانات المستخدم",
+            "en": "A static field for per-user data"
+          },
+          "wrong": "public static string CurrentUser = \"\"; // shared by ALL requests!",
+          "right": "// pass it as a parameter, or use a Scoped service (Phase 3)",
+          "ar": "في تطبيق ويب يخدم آلاف المستخدمين معاً، static يعني أن مستخدماً قد يرى بيانات مستخدم آخر.",
+          "en": "Static state is shared across all concurrent users."
+        }
+      ]
+    }
+  ],
+  "quiz": [
+    {
+      "question": {
+        "ar": "ما الفرق بين الحقل والخاصية؟",
+        "en": "Field vs property?"
+      },
+      "options": [
+        {
+          "ar": "لا فرق",
+          "en": "No difference"
+        },
+        {
+          "ar": "الخاصية لها get/set ويمكن التحكم في الوصول لكل منهما",
+          "en": "A property has get/set accessors with separate access control"
+        },
+        {
+          "ar": "الحقل أسرع دائماً لذلك يُفضّل public",
+          "en": "Fields are faster so prefer public fields"
+        },
+        {
+          "ar": "الخاصية لا تخزن قيمة",
+          "en": "Properties can't store values"
+        }
+      ],
+      "answer": 1,
+      "explanation": {
+        "ar": "الخاصية دالتان get و set، فيمكن جعل القراءة عامة والكتابة خاصة أو إضافة تحقق.",
+        "en": "Properties are accessors you can control separately."
+      }
+    },
+    {
+      "question": {
+        "ar": "أي تعريف يسمح بقراءة الرصيد من الخارج ويمنع تعديله؟",
+        "en": "Which allows reading but not setting from outside?"
+      },
+      "options": [
+        {
+          "ar": "public decimal Balance;",
+          "en": "public decimal Balance;"
+        },
+        {
+          "ar": "private decimal Balance { get; set; }",
+          "en": "private decimal Balance { get; set; }"
+        },
+        {
+          "ar": "public decimal Balance { get; private set; }",
+          "en": "public decimal Balance { get; private set; }"
+        },
+        {
+          "ar": "public decimal Balance { set; }",
+          "en": "public decimal Balance { set; }"
+        }
+      ],
+      "answer": 2,
+      "explanation": {
+        "ar": "get عامة و set خاصة.",
+        "en": "Public get, private set."
+      }
+    },
+    {
+      "question": {
+        "ar": "أين يُفضّل وضع التحقق من أن اسم المالك ليس فارغاً؟",
+        "en": "Where should you validate that owner isn't blank?"
+      },
+      "options": [
+        {
+          "ar": "في الواجهة الأمامية فقط",
+          "en": "Only in the frontend"
+        },
+        {
+          "ar": "في الباني (Constructor)",
+          "en": "In the constructor"
+        },
+        {
+          "ar": "في كل مكان يُستخدم فيه الكائن",
+          "en": "Everywhere the object is used"
+        },
+        {
+          "ar": "لا حاجة للتحقق",
+          "en": "No need"
+        }
+      ],
+      "answer": 1,
+      "explanation": {
+        "ar": "التحقق في الباني يضمن عدم وجود كائن بحالة غير صالحة أصلاً.",
+        "en": "Validating in the constructor makes invalid objects impossible."
+      }
+    },
+    {
+      "question": {
+        "ar": "ما المشكلة في `public static List<CartItem> Cart` في تطبيق ويب؟",
+        "en": "What's wrong with a static Cart in a web app?"
+      },
+      "options": [
+        {
+          "ar": "لا مشكلة",
+          "en": "Nothing"
+        },
+        {
+          "ar": "static أبطأ",
+          "en": "static is slower"
+        },
+        {
+          "ar": "السلة ستكون مشتركة بين كل المستخدمين",
+          "en": "The cart is shared by every user"
+        },
+        {
+          "ar": "لا يمكن استخدام List مع static",
+          "en": "List can't be static"
+        }
+      ],
+      "answer": 2,
+      "explanation": {
+        "ar": "العضو static واحد للتطبيق كله، فكل الطلبات تراه وتعدّله في نفس الوقت.",
+        "en": "Static state is shared by all requests."
+      }
+    },
+    {
+      "question": {
+        "ar": "ماذا يعني `internal class Helper`؟",
+        "en": "What does `internal class Helper` mean?"
+      },
+      "options": [
+        {
+          "ar": "متاح لكل المشاريع",
+          "en": "Visible to every project"
+        },
+        {
+          "ar": "متاح داخل نفس المشروع (Assembly) فقط",
+          "en": "Visible only inside the same assembly"
+        },
+        {
+          "ar": "متاح للأصناف الوارثة فقط",
+          "en": "Only for derived classes"
+        },
+        {
+          "ar": "لا يمكن إنشاء كائن منه",
+          "en": "Cannot be instantiated"
+        }
+      ],
+      "answer": 1,
+      "explanation": {
+        "ar": "internal = داخل نفس الـ Assembly، وهو الافتراضي للأصناف إذا لم تكتب معدِّلاً.",
+        "en": "internal = same assembly (default for classes)."
+      }
+    }
+  ]
+}

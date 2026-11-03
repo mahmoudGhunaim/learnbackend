@@ -1,0 +1,355 @@
+{
+  "id": "p1-cli",
+  "title": {
+    "ar": "أداة dotnet",
+    "en": "The dotnet CLI"
+  },
+  "summary": {
+    "ar": "أداة واحدة لكل شيء: new و build و run و watch و test و publish، والأدوات، وتشغيل ملف ‎.cs واحد في ‎.NET 10.",
+    "en": "One tool for everything: new, build, run, watch, test, publish, tools, and single-file apps in .NET 10."
+  },
+  "minutes": 20,
+  "terms": [
+    "dotnet-cli",
+    "dotnet-watch",
+    "dotnet-publish",
+    "dotnet-tool",
+    "command-line-arguments",
+    "file-based-app"
+  ],
+  "exercises": [
+    "p1-ex-cli-parser"
+  ],
+  "sections": [
+    {
+      "type": "text",
+      "ar": "في عالم JavaScript تستخدم npm و npx و vite و jest و tsc. أما في ‎.NET فكل شيء عبر أمر واحد: [[dotnet-cli]]. يمكنك تطوير ‎.NET كاملاً من الطرفية و VS Code، دون Visual Studio إطلاقاً.",
+      "en": "One `dotnet` command replaces npm, npx, vite, jest and tsc."
+    },
+    {
+      "type": "table",
+      "headers": [
+        {
+          "ar": "الأمر",
+          "en": "Command"
+        },
+        {
+          "ar": "ماذا يفعل",
+          "en": "What it does"
+        },
+        {
+          "ar": "يقابل في JS",
+          "en": "JS equivalent"
+        }
+      ],
+      "rows": [
+        [
+          "`dotnet new webapi -n Shop`",
+          "مشروع جديد من قالب",
+          "`npm create vite@latest`"
+        ],
+        [
+          "`dotnet new list`",
+          "عرض كل القوالب المثبتة",
+          ""
+        ],
+        [
+          "`dotnet restore`",
+          "تنزيل الحزم (يحدث تلقائياً مع build)",
+          "`npm install`"
+        ],
+        [
+          "`dotnet build`",
+          "الترجمة إلى bin/Debug",
+          "`tsc`"
+        ],
+        [
+          "`dotnet run`",
+          "بناء ثم تشغيل",
+          "`npm start`"
+        ],
+        [
+          "`dotnet watch`",
+          "تشغيل مع [[dotnet-watch]]",
+          "`npm run dev` / nodemon"
+        ],
+        [
+          "`dotnet test`",
+          "تشغيل الاختبارات",
+          "`npm test`"
+        ],
+        [
+          "`dotnet publish -c Release`",
+          "تجهيز ملفات النشر. انظر [[dotnet-publish]]",
+          "`npm run build`"
+        ],
+        [
+          "`dotnet add package X`",
+          "إضافة حزمة NuGet",
+          "`npm install X`"
+        ],
+        [
+          "`dotnet add reference ../Core`",
+          "ربط مشروع بمشروع",
+          "workspaces"
+        ],
+        [
+          "`dotnet format`",
+          "تنسيق الكود حسب القواعد",
+          "`prettier`"
+        ],
+        [
+          "`dotnet tool install`",
+          "تثبيت [[dotnet-tool]]",
+          "`npm i -g` / npx"
+        ]
+      ]
+    },
+    {
+      "type": "code",
+      "lang": "bash",
+      "code": "# 1. Create a solution with an API and a test project\ndotnet new sln -n Shop\ndotnet new webapi -n Shop.Api\ndotnet new xunit -n Shop.Tests\ndotnet sln add Shop.Api Shop.Tests\ndotnet add Shop.Tests reference Shop.Api\n\n# 2. Add a package\ndotnet add Shop.Api package Microsoft.EntityFrameworkCore.Sqlite\n\n# 3. Develop with hot reload\ndotnet watch --project Shop.Api\n\n# 4. Test and publish\ndotnet test\ndotnet publish Shop.Api -c Release -o ./publish",
+      "title": {
+        "ar": "سير عمل كامل من الصفر",
+        "en": "A full workflow from scratch"
+      }
+    },
+    {
+      "type": "text",
+      "ar": "**معاملات سطر الأوامر ([[command-line-arguments]])**: عندما تكتب `dotnet new webapi -n Shop --framework net10.0` يصل البرنامج مصفوفة `string[] args` فيها: `[\"new\", \"webapi\", \"-n\", \"Shop\", \"--framework\", \"net10.0\"]`. لا يوجد سحر: البرنامج يقرأ المصفوفة ويفسرها، وهذا ما ستكتبه في التمرين.\n\nولاحظ `--` في `dotnet run -- --port 5000`: ما **قبل** `--` لأداة dotnet نفسها، وما **بعده** يُمرَّر لتطبيقك.",
+      "en": "Arguments arrive as string[] args. In `dotnet run -- x`, everything after `--` goes to your app."
+    },
+    {
+      "type": "annotated",
+      "lang": "bash",
+      "title": {
+        "ar": "من يستقبل ماذا؟",
+        "en": "Who receives what?"
+      },
+      "code": "dotnet run --project Backend/LearnBackend.Api -c Release -- --Sandbox:TimeoutSeconds=10",
+      "notes": {
+        "1": {
+          "ar": "`dotnet run` أمر الأداة. و `--project` و `-c Release` خيارات لأداة dotnet نفسها. وكل ما بعد `--` يذهب لتطبيقك كـ args، وهنا يصبح إعداداً يستبدل قيمة appsettings.json، وستفهم ذلك في درس الإعدادات.",
+          "en": "Options before `--` go to the CLI; after it to your app, here overriding a config value."
+        }
+      }
+    },
+    {
+      "type": "heading",
+      "ar": "جديد في ‎.NET 10: تشغيل ملف ‎.cs واحد",
+      "en": "New in .NET 10: run a single .cs file"
+    },
+    {
+      "type": "text",
+      "ar": "كنت تحتاج سابقاً مشروعاً كاملاً (‎.csproj) حتى لتجربة سطرين. مع ‎.NET 10 أصبحت هناك [[file-based-app]]: ملف واحد يعمل مباشرة، ويمكنه حتى إضافة حزم NuGet بتوجيه `#:package` في أعلاه، مثل سكربتات Node.js.",
+      "en": ".NET 10 runs a single .cs file directly, even with #:package directives."
+    },
+    {
+      "type": "code",
+      "lang": "csharp",
+      "code": "// hello.cs  →  run with:  dotnet run hello.cs\n#:package Humanizer@2.14.1\n\nusing Humanizer;\n\nvar started = DateTime.UtcNow.AddMinutes(-42);\nConsole.WriteLine($\"Started {started.Humanize()}\");     // \"Started 42 minutes ago\"\nConsole.WriteLine(\"dependency_injection\".Humanize());   // \"Dependency injection\"",
+      "title": {
+        "ar": "سكربت C# من ملف واحد",
+        "en": "A single-file C# script"
+      }
+    },
+    {
+      "type": "callout",
+      "kind": "tip",
+      "ar": "استخدم `dotnet watch` أثناء التطوير: عند حفظ ملف ‎.cs يطبّق [[dotnet-watch]] التعديل على التطبيق وهو يعمل (Hot Reload)، دون إعادة تشغيل غالباً. هذا هو `npm run dev` الخاص بك.",
+      "en": "Use dotnet watch during development (Hot Reload)."
+    },
+    {
+      "type": "source",
+      "path": "README.md",
+      "find": "dotnet run --project Backend/LearnBackend.Api",
+      "context": 4,
+      "note": {
+        "ar": "أوامر تشغيل هذا التطبيق نفسه موجودة في README، وكلها أوامر dotnet CLI.",
+        "en": "This app's own run commands are all dotnet CLI commands."
+      }
+    },
+    {
+      "type": "mistakes",
+      "items": [
+        {
+          "title": {
+            "ar": "تمرير معاملات التطبيق قبل --",
+            "en": "Passing app arguments before --"
+          },
+          "wrong": "dotnet run --Sandbox:TimeoutSeconds=10   # dotnet doesn't know this option",
+          "right": "dotnet run -- --Sandbox:TimeoutSeconds=10",
+          "ar": "الخيارات قبل `--` تقرؤها أداة dotnet نفسها.",
+          "en": "Options before -- are for the CLI."
+        },
+        {
+          "title": {
+            "ar": "نشر نسخة Debug",
+            "en": "Publishing a Debug build"
+          },
+          "wrong": "dotnet publish",
+          "right": "dotnet publish -c Release",
+          "ar": "‎.NET 8+ يجعل publish افتراضياً Release لمعظم المشاريع، لكن كن صريحاً. نسخة Debug أبطأ وتحتوي معلومات تصحيح.",
+          "en": "Be explicit: -c Release."
+        },
+        {
+          "title": {
+            "ar": "تشغيل الأمر في مجلد خاطئ",
+            "en": "Running in the wrong folder"
+          },
+          "wrong": "# in the repo root with several projects\ndotnet run   # MSB1011: more than one project file",
+          "right": "dotnet run --project Backend/LearnBackend.Api",
+          "ar": "إذا كان المجلد يحتوي أكثر من مشروع أو حل، حدد الهدف بـ `--project`.",
+          "en": "Specify --project when ambiguous."
+        }
+      ]
+    }
+  ],
+  "quiz": [
+    {
+      "question": {
+        "ar": "ما مقابل `npm run dev` مع إعادة التحميل التلقائي؟",
+        "en": "Equivalent of `npm run dev` with auto reload?"
+      },
+      "options": [
+        {
+          "ar": "dotnet build",
+          "en": "dotnet build"
+        },
+        {
+          "ar": "dotnet watch",
+          "en": "dotnet watch"
+        },
+        {
+          "ar": "dotnet publish",
+          "en": "dotnet publish"
+        },
+        {
+          "ar": "dotnet restore",
+          "en": "dotnet restore"
+        }
+      ],
+      "answer": 1,
+      "explanation": {
+        "ar": "dotnet watch يراقب الملفات ويطبق Hot Reload.",
+        "en": "dotnet watch."
+      }
+    },
+    {
+      "question": {
+        "ar": "في `dotnet run -- --port 5000`، من يستقبل `--port 5000`؟",
+        "en": "In `dotnet run -- --port 5000`, who gets `--port 5000`?"
+      },
+      "options": [
+        {
+          "ar": "أداة dotnet",
+          "en": "The dotnet CLI"
+        },
+        {
+          "ar": "تطبيقك عبر args",
+          "en": "Your app via args"
+        },
+        {
+          "ar": "MSBuild",
+          "en": "MSBuild"
+        },
+        {
+          "ar": "لا أحد",
+          "en": "Nobody"
+        }
+      ],
+      "answer": 1,
+      "explanation": {
+        "ar": "ما بعد `--` يُمرَّر للتطبيق.",
+        "en": "After -- goes to the app."
+      }
+    },
+    {
+      "question": {
+        "ar": "ما الأمر الذي يجهّز ملفات التطبيق للنشر على خادم؟",
+        "en": "Which command prepares deployable output?"
+      },
+      "options": [
+        {
+          "ar": "dotnet build",
+          "en": "dotnet build"
+        },
+        {
+          "ar": "dotnet run",
+          "en": "dotnet run"
+        },
+        {
+          "ar": "dotnet publish -c Release",
+          "en": "dotnet publish -c Release"
+        },
+        {
+          "ar": "dotnet pack",
+          "en": "dotnet pack"
+        }
+      ],
+      "answer": 2,
+      "explanation": {
+        "ar": "publish ينتج مجلداً جاهزاً للنشر. و pack ينتج حزمة NuGet.",
+        "en": "publish = deployable folder; pack = NuGet package."
+      }
+    },
+    {
+      "question": {
+        "ar": "كيف تربط مشروع اختبارات بمشروع API؟",
+        "en": "How do you make a test project use the API project?"
+      },
+      "options": [
+        {
+          "ar": "dotnet add package Shop.Api",
+          "en": "dotnet add package Shop.Api"
+        },
+        {
+          "ar": "dotnet add Shop.Tests reference Shop.Api",
+          "en": "dotnet add Shop.Tests reference Shop.Api"
+        },
+        {
+          "ar": "dotnet sln link",
+          "en": "dotnet sln link"
+        },
+        {
+          "ar": "نسخ الملفات",
+          "en": "Copy the files"
+        }
+      ],
+      "answer": 1,
+      "explanation": {
+        "ar": "reference يضيف ProjectReference.",
+        "en": "Adds a ProjectReference."
+      }
+    },
+    {
+      "question": {
+        "ar": "ما الجديد في ‎.NET 10 بخصوص الملفات المفردة؟",
+        "en": "What's new in .NET 10 about single files?"
+      },
+      "options": [
+        {
+          "ar": "لا شيء",
+          "en": "Nothing"
+        },
+        {
+          "ar": "dotnet run app.cs يشغل ملفاً واحداً دون ‎.csproj",
+          "en": "dotnet run app.cs runs a file without a .csproj"
+        },
+        {
+          "ar": "الملفات المفردة أصبحت ممنوعة",
+          "en": "Single files are banned"
+        },
+        {
+          "ar": "يجب كتابة Main دائماً",
+          "en": "Main is always required"
+        }
+      ],
+      "answer": 1,
+      "explanation": {
+        "ar": "File-based apps مع توجيهات مثل `#:package`.",
+        "en": "File-based apps."
+      }
+    }
+  ]
+}
